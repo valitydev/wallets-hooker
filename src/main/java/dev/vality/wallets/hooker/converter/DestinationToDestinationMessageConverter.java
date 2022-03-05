@@ -66,6 +66,7 @@ public class DestinationToDestinationMessageConverter
                 var swagDigitalWallet = resource.getDigitalWallet().getDigitalWallet();
                 digitalWallet.setDigitalWalletId(swagDigitalWallet.getId());
                 digitalWallet.setDigitalWalletProvider(swagDigitalWallet.getPaymentService().getId());
+                digitalWallet.setType(DestinationResource.TypeEnum.DIGITALWALLET);
                 return digitalWallet;
             default:
                 throw new UnknownResourceException("Can't init destination with unknown resource");
