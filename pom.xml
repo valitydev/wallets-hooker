@@ -31,7 +31,7 @@
         <db.password>postgres</db.password>
         <db.schema>whook</db.schema>
         <!--        -->
-        <fistful-proto.version>1.132-ef0d767</fistful-proto.version>
+        <fistful-proto.version>1.138-9726b2c</fistful-proto.version>
         <webhook-dispatcher-proto.version>1.9-f2aff0c</webhook-dispatcher-proto.version>
         <machinegun-proto.version>1.12-ebae56f</machinegun-proto.version>
         <sink-common-lib.version>0.0.4</sink-common-lib.version>
