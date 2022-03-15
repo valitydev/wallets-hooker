@@ -37,7 +37,7 @@
         <sink-common-lib.version>0.0.4</sink-common-lib.version>
         <checkstyle.config.suppressions.path>./src/main/resources/checkstyle/checkstyle-suppressions.xml</checkstyle.config.suppressions.path>
 
-        <jackson-version>2.13.1</jackson-version>
+        <jackson-version>2.13.2</jackson-version>
         <jaxb-version>2.3.1</jaxb-version>
     </properties>
 
@@ -142,12 +142,12 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.132-ef0d767</version>
+            <version>1.137-d74e6fb</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.1-e966ae6-client</version>
+            <version>1.1-56dba5c-server</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.woody</groupId>
@@ -187,7 +187,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.21-e4784ab</version>
+            <version>1.27-dec518d</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -215,13 +215,13 @@
         <dependency>
             <groupId>io.github.benas</groupId>
             <artifactId>random-beans</artifactId>
-            <version>3.6.0</version>
+            <version>3.9.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
-            <version>1.15.3</version>
+            <version>1.16.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -245,7 +245,7 @@
         <dependency>
             <groupId>io.zonky.test.postgres</groupId>
             <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
-            <version>14.1.0</version>
+            <version>14.2.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -280,7 +280,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>1.7.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
