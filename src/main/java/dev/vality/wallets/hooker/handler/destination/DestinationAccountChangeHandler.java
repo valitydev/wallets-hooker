@@ -80,7 +80,7 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
     private String getExternalId(DestinationMessage destinationMessage) throws JsonProcessingException {
         JsonNode jsonNode = objectMapper.readTree(destinationMessage.getMessage());
         JsonNode externalID = jsonNode.get(EXTERNAL_ID);
-        return externalID!=null ? externalID.asText() : null;
+        return externalID != null ? externalID.asText() : null;
     }
 
     private WebhookMessage generateDestinationCreateHookMsg(
