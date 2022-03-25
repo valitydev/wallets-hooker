@@ -76,9 +76,8 @@ public class DestinationToDestinationMessageConverterTest {
         assertEquals(destination.getName(), swagDestination.getName());
 
         String digitalWalletString = resourceToJsonStringDestinationConverter.convert(digitalWalletId);
-        assertEquals(
-                "{\"type\":\"DigitalWallet\",\"digitalWalletId\":\"digital_wallet_id\",\"digitalWalletProvider\":\"123\"}",
-                digitalWalletString);
+        assertEquals("{\"type\":\"DigitalWallet\",\"digitalWalletId\":\"digital_wallet_id\"," +
+                "\"digitalWalletProvider\":\"123\"}", digitalWalletString);
     }
 
     @Test
