@@ -146,7 +146,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.1-ab5588c-server</version>
+            <version>1.1-56dba5c-server</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.woody</groupId>
