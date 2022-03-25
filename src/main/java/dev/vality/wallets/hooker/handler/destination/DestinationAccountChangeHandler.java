@@ -1,10 +1,11 @@
 package dev.vality.wallets.hooker.handler.destination;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.destination.AccountChange;
 import dev.vality.fistful.destination.TimestampedChange;
 import dev.vality.machinegun.eventsink.MachineEvent;
-import dev.vality.swag.wallets.webhook.events.model.Destination;
 import dev.vality.wallets.hooker.dao.destination.DestinationMessageDaoImpl;
 import dev.vality.wallets.hooker.dao.destination.DestinationReferenceDao;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
@@ -27,6 +28,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class DestinationAccountChangeHandler implements DestinationEventHandler {
+
+    public static final String EXTERNAL_ID = "externalID";
 
     private final DestinationReferenceDao destinationReferenceDao;
     private final DestinationMessageDaoImpl destinationMessageDao;
@@ -53,8 +56,7 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
                     destinationId, identityId);
 
             DestinationMessage destinationMessage = destinationMessageDao.get(destinationId);
-            Destination destination = objectMapper.readValue(destinationMessage.getMessage(), Destination.class);
-            createDestinationReference(event, identityId, destination.getExternalID());
+            createDestinationReference(event, identityId, getExternalId(destinationMessage));
 
             webHookDao.getByIdentityAndEventType(identityId, EventType.DESTINATION_CREATED)
                     .stream()
@@ -73,6 +75,12 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
             log.error("Error while handling DestinationAccountCreatedChange: {}", change, e);
             throw new HandleEventException("Error while handling DestinationAccountCreatedChange", e);
         }
+    }
+
+    private String getExternalId(DestinationMessage destinationMessage) throws JsonProcessingException {
+        JsonNode jsonNode = objectMapper.readTree(destinationMessage.getMessage());
+        JsonNode externalID = jsonNode.get(EXTERNAL_ID);
+        return externalID.asText();
     }
 
     private WebhookMessage generateDestinationCreateHookMsg(
