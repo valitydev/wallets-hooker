@@ -1,16 +1,18 @@
 package dev.vality.wallets.hooker.handler.destination.generator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.vality.swag.wallets.webhook.events.model.Destination;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.vality.swag.wallets.webhook.events.model.DestinationCreated;
 import dev.vality.swag.wallets.webhook.events.model.Event;
 import dev.vality.wallets.hooker.domain.WebHookModel;
+import dev.vality.wallets.hooker.domain.tables.pojos.DestinationMessage;
 import dev.vality.wallets.hooker.exception.GenerateMessageException;
 import dev.vality.wallets.hooker.handler.AdditionalHeadersGenerator;
 import dev.vality.wallets.hooker.model.MessageGenParams;
-import dev.vality.wallets.hooker.service.WebHookMessageGeneratorServiceImpl;
-import dev.vality.wallets.hooker.domain.tables.pojos.DestinationMessage;
 import dev.vality.wallets.hooker.service.BaseHookMessageGenerator;
+import dev.vality.wallets.hooker.service.WebHookMessageGeneratorServiceImpl;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,8 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGenerator<DestinationMessage> {
 
+    public static final String DESTINATION = "destination";
+    public static final String IDENTITY = "identity";
     private final WebHookMessageGeneratorServiceImpl<DestinationMessage> generatorService;
     private final ObjectMapper objectMapper;
     private final AdditionalHeadersGenerator additionalHeadersGenerator;
@@ -44,11 +48,7 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
             WebHookModel model,
             MessageGenParams messageGenParams) {
         try {
-            Destination value = objectMapper.readValue(event.getMessage(), Destination.class);
-            value.setIdentity(model.getIdentityId());
-
             DestinationCreated destinationCreated = new DestinationCreated();
-            destinationCreated.setDestination(value);
             destinationCreated.setEventID(messageGenParams.getEventId().toString());
             destinationCreated.setEventType(Event.EventTypeEnum.DESTINATIONCREATED);
             OffsetDateTime parse = OffsetDateTime.parse(
@@ -56,12 +56,13 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
                     DateTimeFormatter.ISO_DATE_TIME);
             destinationCreated.setOccuredAt(parse);
             destinationCreated.setTopic(Event.TopicEnum.DESTINATIONTOPIC);
-
             String requestBody = objectMapper.writeValueAsString(destinationCreated);
 
+            String messageString = initResultMessage(event, model, requestBody);
             WebhookMessage webhookMessage = generatorService.generate(event, model, messageGenParams);
-            webhookMessage.setRequestBody(requestBody.getBytes());
-            webhookMessage.setAdditionalHeaders(additionalHeadersGenerator.generate(model, requestBody));
+
+            webhookMessage.setRequestBody(messageString.getBytes());
+            webhookMessage.setAdditionalHeaders(additionalHeadersGenerator.generate(model, messageString));
             webhookMessage.setEventId(messageGenParams.getEventId());
 
             log.info("Webhook message from destination_event_created was generated, destinationId={}, model={}",
@@ -76,4 +77,14 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
         }
 
     }
+
+    private String initResultMessage(DestinationMessage event, WebHookModel model, String requestBody)
+            throws JsonProcessingException {
+        JsonNode jsonNodeRoot = objectMapper.readTree(event.getMessage());
+        JsonNode resultDestinationNode = ((ObjectNode) jsonNodeRoot).put(IDENTITY, model.getIdentityId());
+        JsonNode requestBodyJson = objectMapper.readTree(requestBody);
+        JsonNode messageResult = ((ObjectNode) requestBodyJson).set(DESTINATION, resultDestinationNode);
+        return objectMapper.writeValueAsString(messageResult);
+    }
+
 }
