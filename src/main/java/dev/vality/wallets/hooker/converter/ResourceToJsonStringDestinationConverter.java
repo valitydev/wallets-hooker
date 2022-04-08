@@ -35,7 +35,7 @@ public class ResourceToJsonStringDestinationConverter implements Converter<Resou
                 CryptoWallet cryptoWallet = new CryptoWallet();
                 cryptoWallet.setType(DestinationResource.TypeEnum.CRYPTOWALLET);
                 ResourceCryptoWallet resourceCryptoWallet = resource.getCryptoWallet();
-                cryptoWallet.setCryptoWalletId(resourceCryptoWallet.getCryptoWallet().id);
+                cryptoWallet.setCryptoWalletId(resourceCryptoWallet.getCryptoWallet().getId());
                 cryptoWallet.setCurrency(
                         CryptoCurrency.fromValue(
                                 CaseFormat.UPPER_UNDERSCORE.to(
