@@ -41,8 +41,6 @@ spring:
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 10
-  flyway:
-    schemas: whook
 
 info:
   version: '@project.version@'
