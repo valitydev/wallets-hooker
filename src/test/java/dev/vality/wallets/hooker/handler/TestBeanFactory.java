@@ -34,7 +34,7 @@ public class TestBeanFactory {
         BankCard bankCard = new BankCard();
         bankCard.setBin("1234");
         bankCard.setMaskedPan("421");
-        bankCard.setPaymentSystem(new PaymentSystemRef(LegacyBankCardPaymentSystem.mastercard.name()));
+        bankCard.setPaymentSystem(new PaymentSystemRef("mastercard"));
         bankCard.setToken("token");
         Resource resource = new Resource();
         resource.setBankCard(new ResourceBankCard(bankCard));

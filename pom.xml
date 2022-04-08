@@ -22,7 +22,8 @@
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
         <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <!--        -->
+        <checkstyle.config.suppressions.path>./src/main/resources/checkstyle/checkstyle-suppressions.xml
+        </checkstyle.config.suppressions.path>
         <db.host.name>localhost</db.host.name>
         <db.host.port>5432</db.host.port>
         <db.name>wallets_hooker</db.name>
@@ -30,14 +31,6 @@
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
         <db.schema>whook</db.schema>
-        <!--        -->
-        <webhook-dispatcher-proto.version>1.9-f2aff0c</webhook-dispatcher-proto.version>
-        <machinegun-proto.version>1.12-ebae56f</machinegun-proto.version>
-        <sink-common-lib.version>0.0.4</sink-common-lib.version>
-        <checkstyle.config.suppressions.path>./src/main/resources/checkstyle/checkstyle-suppressions.xml</checkstyle.config.suppressions.path>
-
-        <jackson-version>2.13.2</jackson-version>
-        <jaxb-version>2.3.1</jaxb-version>
     </properties>
 
     <dependencies>
@@ -73,12 +66,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson-version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>${jaxb-version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
@@ -120,8 +111,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-
-        <!--kafka-->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -136,17 +125,13 @@
         <!-- Vality libs-->
         <dependency>
             <groupId>dev.vality</groupId>
-            <artifactId>mamsel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.141-fd4117f</version>
+            <version>1.145-c45166d</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.1-56dba5c-server</version>
+            <version>1.1-540e016-server</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.woody</groupId>
@@ -155,7 +140,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>30.1.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -168,12 +153,11 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>db-common-lib</artifactId>
-            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>webhook-dispatcher-proto</artifactId>
-            <version>1.12-49f714e</version>
+            <version>1.14-8a265a5</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -181,12 +165,8 @@
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
-            <artifactId>custom-actuator-endpoints</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.27-dec518d</version>
+            <version>1.30-277f06e</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -195,17 +175,6 @@
         </dependency>
 
         <!--Test libs-->
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-junit</artifactId>
-            <version>2.0.0.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>mockwebserver</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -218,36 +187,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.16.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>testcontainers-annotations</artifactId>
             <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.8.2</version>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-junit</artifactId>
+            <version>2.0.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.zonky.test</groupId>
-            <artifactId>embedded-postgres</artifactId>
-            <version>1.3.1</version>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
-            <version>14.2.0</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
     <build>
         <resources>
@@ -284,7 +239,7 @@
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>1.3</version>
+                        <version>3.2.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -395,5 +350,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

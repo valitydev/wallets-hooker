@@ -2,9 +2,7 @@ package dev.vality.wallets.hooker.converter;
 
 import com.google.common.base.CaseFormat;
 import dev.vality.fistful.base.*;
-import dev.vality.mamsel.PaymentSystemUtil;
 import dev.vality.swag.wallets.webhook.events.model.BankCard;
-import dev.vality.swag.wallets.webhook.events.model.CryptoCurrency;
 import dev.vality.swag.wallets.webhook.events.model.CryptoWallet;
 import dev.vality.swag.wallets.webhook.events.model.DigitalWallet;
 import dev.vality.swag.wallets.webhook.events.model.*;
@@ -29,24 +27,20 @@ public class ResourceToJsonStringDestinationConverter implements Converter<Resou
                 bankCard.setType(DestinationResource.TypeEnum.BANKCARD);
                 bankCard.bin(resourceBankCard.getBankCard().getBin());
                 bankCard.cardNumberMask(resourceBankCard.getBankCard().getMaskedPan());
-                bankCard.paymentSystem(PaymentSystemUtil.getFistfulPaymentSystemName(resourceBankCard.getBankCard()));
+                if (resourceBankCard.getBankCard().getPaymentSystem() != null) {
+                    bankCard.paymentSystem(resourceBankCard.getBankCard().getPaymentSystem().getId());
+                }
                 return JsonUtil.toString(bankCard);
             case CRYPTO_WALLET:
                 CryptoWallet cryptoWallet = new CryptoWallet();
                 cryptoWallet.setType(DestinationResource.TypeEnum.CRYPTOWALLET);
                 ResourceCryptoWallet resourceCryptoWallet = resource.getCryptoWallet();
-                cryptoWallet.setCryptoWalletId(resourceCryptoWallet.getCryptoWallet().id);
-                if (resourceCryptoWallet.getCryptoWallet().isSetData()) {
-                    CryptoData cryptoData = resourceCryptoWallet.getCryptoWallet().getData();
-                    cryptoWallet.setCurrency(
-                            CryptoCurrency.fromValue(
-                                    CaseFormat.UPPER_UNDERSCORE.to(
-                                            CaseFormat.UPPER_CAMEL,
-                                            cryptoData.getSetField().getFieldName()
-                                    )
-                            )
-                    );
-                }
+                cryptoWallet.setCryptoWalletId(resourceCryptoWallet.getCryptoWallet().getId());
+                cryptoWallet.setCurrency(
+                        CryptoCurrency.fromValue(
+                                CaseFormat.UPPER_UNDERSCORE.to(
+                                        CaseFormat.UPPER_CAMEL,
+                                        resourceCryptoWallet.getCryptoWallet().getCurrency().getId())));
                 return JsonUtil.toString(cryptoWallet);
             case DIGITAL_WALLET:
                 DigitalWallet digitalWallet = new DigitalWallet();
