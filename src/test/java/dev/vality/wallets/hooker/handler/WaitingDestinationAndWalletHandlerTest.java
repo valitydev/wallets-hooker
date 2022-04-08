@@ -4,17 +4,17 @@ import dev.vality.fistful.destination.*;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.msgpack.Value;
+import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
+import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainer;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
 import dev.vality.wallets.hooker.service.kafka.DestinationEventService;
 import dev.vality.wallets.hooker.service.kafka.WalletEventService;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,9 +23,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Slf4j
-@TestPropertySource(properties = "fistful.pollingEnabled=false")
-public class WaitingDestinationAndWalletHandlerTest extends EmbeddedPostgresIntegrationTest {
+@PostgresqlTestcontainer
+@DefaultSpringBootTest
+public class WaitingDestinationAndWalletHandlerTest {
 
     @Autowired
     private WalletEventService walletEventService;

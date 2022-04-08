@@ -4,19 +4,18 @@ server:
     context-path: "/wallets-hooker/v1"
 
 management:
-  security:
-    flag: false
   server:
     port: '@management.port@'
   metrics:
     export:
-      statsd:
-        flavor: etsy
-        enabled: false
       prometheus:
         enabled: false
+    tags:
+      application: '@project.name@'
   endpoint:
     health:
+      probes:
+        enabled: true
       show-details: always
     metrics:
       enabled: true
@@ -42,9 +41,9 @@ spring:
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 10
-    flyway:
-      table: schema_version
-      schemas: whook
+  flyway:
+    table: schema_version
+    schemas: whook
 
 info:
   version: '@project.version@'
@@ -100,3 +99,9 @@ parent:
   not:
     exist:
       id: -1
+
+testcontainers:
+  postgresql:
+    tag: '11.4'
+  kafka:
+    tag: '6.2.0'

@@ -22,8 +22,7 @@ public class DestinationToDestinationMessageConverterTest {
                                 .setMaskedPan("masked_pan")
                                 .setCardType(CardType.charge_card)
                                 .setBinDataId(Value.i(1))
-                                .setPaymentSystem(new PaymentSystemRef(
-                                        LegacyBankCardPaymentSystem.mastercard.name()))
+                                .setPaymentSystem(new PaymentSystemRef("mastercard"))
                 )
         );
         Destination destination = new Destination()
@@ -43,8 +42,7 @@ public class DestinationToDestinationMessageConverterTest {
     public void testConvertFromEventWithCryptoWalletResource() {
         Resource resource = Resource.crypto_wallet(
                 new ResourceCryptoWallet(
-                        new CryptoWallet("crypto_wallet_id", CryptoCurrency.bitcoin_cash)
-                                .setData(CryptoData.bitcoin_cash(new CryptoDataBitcoinCash()))
+                        new CryptoWallet("crypto_wallet_id", new CryptoCurrencyRef("bitcoin_cash"))
                 )
         );
         Destination destination = new Destination()
