@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.0.14</version>
+        <version>1.0.18</version>
     </parent>
 
     <artifactId>wallets-hooker</artifactId>
@@ -20,7 +20,6 @@
         <server.port>8022</server.port>
         <management.port>8023</management.port>
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
-        <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
         <checkstyle.config.suppressions.path>./src/main/resources/checkstyle/checkstyle-suppressions.xml
         </checkstyle.config.suppressions.path>
@@ -83,6 +82,10 @@
             <version>0.2.2</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.msk</groupId>
+            <artifactId>aws-msk-iam-auth</artifactId>
+        </dependency>
 
         <!--Spring libs-->
         <dependency>
@@ -126,7 +129,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.145-c45166d</version>
+            <version>1.151-9c78e89</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -166,7 +169,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.30-277f06e</version>
+            <version>1.41-96f7f11</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -189,7 +192,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>testcontainers-annotations</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>

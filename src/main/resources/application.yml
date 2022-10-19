@@ -41,27 +41,21 @@ spring:
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 10
-
+  kafka:
+    bootstrap-servers: "localhost:29092"
+    consumer:
+      group-id: wallets-hooker
+      properties:
+        max.poll.interval.ms: 60000
+        session.timeout.ms: 60000
+        max.poll.records: 100
 info:
   version: '@project.version@'
   stage: dev
 
 kafka:
-  bootstrap-servers: "localhost:29092"
   consumer:
-    group-id: wallets-hooker
     concurrency: 7
-  max-poll-records: 100
-  max-poll-interval-ms: 60000
-  max-session-timeout-ms: 60000
-  ssl:
-    enabled: false
-    key-store-type: changeit
-    key-store-location: changeit
-    key-password: changeit
-    trust-store-type: changeit
-    trust-store-location: changeit
-    trust-store-password: changeit
   topic:
     hook:
       name: hook
@@ -72,13 +66,11 @@ kafka:
     withdrawal:
       name: withdrawal
       listener:
-        enabled:
-          false
+        enabled: false
     destination:
       name: destination
       listener:
-        enabled:
-          false
+        enabled: false
 
 webhook:
   sender:
