@@ -139,6 +139,7 @@
         <dependency>
             <groupId>dev.vality.woody</groupId>
             <artifactId>woody-thrift</artifactId>
+            <version>1.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
