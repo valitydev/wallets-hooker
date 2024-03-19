@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.0.18</version>
+        <version>1.0.20</version>
     </parent>
 
     <artifactId>wallets-hooker</artifactId>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
-            <version>0.2.2</version>
+            <version>0.2.6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -129,12 +129,12 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.151-9c78e89</version>
+            <version>1.168-6600be9</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.1-540e016-server</version>
+            <version>1.38-719220c-server</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.woody</groupId>
@@ -169,7 +169,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.41-96f7f11</version>
+            <version>1.42-f32e92d</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -242,7 +242,7 @@
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
