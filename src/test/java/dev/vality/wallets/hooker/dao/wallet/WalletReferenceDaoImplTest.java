@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 @PostgresqlSpringBootITest
-public class WalletReferenceDaoImplTest {
+class WalletReferenceDaoImplTest {
 
     @Autowired
     private WalletReferenceDao walletReferenceDao;
 
     @Test
-    public void create() {
+    void create() {
         WalletIdentityReference reference = new WalletIdentityReference();
         reference.setIdentityId("identity");
         String walletId = "walletId";

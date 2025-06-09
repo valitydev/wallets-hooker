@@ -7,14 +7,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DestinationToDestinationMessageConverterTest {
+class DestinationToDestinationMessageConverterTest {
 
     private DestinationToDestinationMessageConverter converter = new DestinationToDestinationMessageConverter();
     private ResourceToJsonStringDestinationConverter resourceToJsonStringDestinationConverter
             = new ResourceToJsonStringDestinationConverter();
 
     @Test
-    public void testConvertFromEventWithBankCardResource() {
+    void testConvertFromEventWithBankCardResource() {
         Resource resource = Resource.bank_card(
                 new ResourceBankCard(
                         new BankCard("token")
@@ -39,7 +39,7 @@ public class DestinationToDestinationMessageConverterTest {
     }
 
     @Test
-    public void testConvertFromEventWithCryptoWalletResource() {
+    void testConvertFromEventWithCryptoWalletResource() {
         Resource resource = Resource.crypto_wallet(
                 new ResourceCryptoWallet(
                         new CryptoWallet("crypto_wallet_id", new CryptoCurrencyRef("bitcoin_cash"))
@@ -59,7 +59,7 @@ public class DestinationToDestinationMessageConverterTest {
     }
 
     @Test
-    public void testConvertFromEventWithDigitalWalletResource() {
+    void testConvertFromEventWithDigitalWalletResource() {
         Resource digitalWalletId = Resource.digital_wallet(
                 new ResourceDigitalWallet((
                         new DigitalWallet("digital_wallet_id", new PaymentServiceRef().setId("123"))
@@ -79,7 +79,7 @@ public class DestinationToDestinationMessageConverterTest {
     }
 
     @Test
-    public void testConvertFromEventWithBankCardResourceAndPaymentSystemIsNull() {
+    void testConvertFromEventWithBankCardResourceAndPaymentSystemIsNull() {
         Resource resource = Resource.bank_card(
                 new ResourceBankCard(
                         new BankCard("token")

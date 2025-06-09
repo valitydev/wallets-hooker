@@ -7,9 +7,10 @@ import dev.vality.wallets.hooker.converter.WebHookParamsToWebHookConverter;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class WebHookerServiceTest {
+@ExtendWith(MockitoExtension.class)
+class WebHookerServiceTest {
 
     @Mock
     private WebHookDao webHookDao;
@@ -34,14 +36,13 @@ public class WebHookerServiceTest {
     private WebHookerService webHookerService;
 
     @BeforeEach
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    void init() {
         webHookerService = new WebHookerService(webHookDao, webHookConverter, webHookParamsToWebHookConverter,
                 webHookModelToWebHookConverter);
     }
 
     @Test
-    public void getList() {
+    void getList() {
         String id = "test";
         ArrayList<dev.vality.wallets.hooker.domain.tables.pojos.Webhook> webhooks = new ArrayList<>();
         dev.vality.wallets.hooker.domain.tables.pojos.Webhook webhook =

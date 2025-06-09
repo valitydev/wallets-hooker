@@ -10,9 +10,9 @@ import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 @PostgresqlSpringBootITest
 @TestPropertySource(properties = "fistful.pollingEnabled=false")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class WalletEventSinkEventHandlerTest {
+class WalletEventSinkEventHandlerTest {
 
     @Autowired
     private WalletEventService walletEventService;
@@ -38,11 +38,11 @@ public class WalletEventSinkEventHandlerTest {
     @Autowired
     private WebHookDao webHookDao;
 
-    @MockBean
+    @MockitoBean
     private WebHookMessageSenderService webHookMessageSenderService;
 
     @Test
-    public void handle() {
+    void handle() {
         WebHookModel webhook = TestBeanFactory.createWebhookModel();
 
         webHookDao.create(webhook);

@@ -1,17 +1,14 @@
 server:
-  port: '@server.port@'
+  port: ${server.port}
   servlet:
     context-path: "/wallets-hooker/v1"
 
 management:
   server:
-    port: '@management.port@'
+    port: ${management.port}
   metrics:
-    export:
-      prometheus:
-        enabled: false
     tags:
-      application: '@project.name@'
+      application: ${project.name}
   endpoint:
     health:
       probes:
@@ -25,19 +22,23 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: false
 
 spring:
   application:
-    name: '@project.name@'
+    name: ${project.name}
   output:
     ansi:
       enabled: always
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.postgresql.Driver
-    url: '@db.url@'
-    username: '@db.user@'
-    password: '@db.password@'
+    url: ${db.url}
+    username: ${db.user}
+    password: ${db.password}
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 10
@@ -50,7 +51,7 @@ spring:
         session.timeout.ms: 60000
         max.poll.records: 100
 info:
-  version: '@project.version@'
+  version: ${project.version}
   stage: dev
 
 kafka:

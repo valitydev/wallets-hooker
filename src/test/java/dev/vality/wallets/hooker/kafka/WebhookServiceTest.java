@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @KafkaPostgresqlSpringBootITest
 @TestPropertySource(properties = "merchant.callback.timeout=1")
-public class WebhookServiceTest {
+class WebhookServiceTest {
 
     private static final String TEST = "/test";
     private static final String URL_2 = TEST + "/qwe";
@@ -56,7 +56,7 @@ public class WebhookServiceTest {
     private WithdrawalEventService withdrawalEventService;
 
     @Test
-    public void startTest() throws TException {
+    void startTest() throws TException {
         WebhookParams webhookParams = new WebhookParams()
                 .setEventFilter(new EventFilter()
                         .setTypes(Set.of(EventType.destination(DestinationEventType.created(new DestinationCreated())),

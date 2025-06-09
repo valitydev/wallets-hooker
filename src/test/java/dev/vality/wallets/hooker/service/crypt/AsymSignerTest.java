@@ -11,10 +11,10 @@ import java.util.Base64;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AsymSignerTest {
+class AsymSignerTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AsymSigner asymSigner = new AsymSigner();
         KeyPair keyPair = asymSigner.generateKeys();
         String data = "{\"eventID\":27,\"occuredAt\":\"2017-05-16T13:49:34.935099Z\",\"topic\":\"InvoicesTopic\",\"eventType\":\"PaymentCaptured\",\"invoice\":{\"id\":\"qXMiygTqb2\",\"shopID\":1,\"createdAt\":\"2017-05-16T13:49:32.753723Z\",\"status\":\"unpaid\",\"reason\":null,\"dueDate\":\"2017-05-16T13:59:32Z\",\"amount\":100000,\"currency\":\"RUB\",\"metadata\":{\"retryPolicyType\":\"application/json\",\"data\":\"eyJpbnZvaWNlX2R1bW15X2NvbnRleHQiOiJ0ZXN0X3ZhbHVlIn0=\"},\"product\":\"test_product\",\"description\":\"test_invoice_description\"},\"payment\":{\"id\":\"1\",\"createdAt\":\"2017-05-16T13:49:33.182195Z\",\"status\":\"captured\",\"error\":null,\"amount\":100000,\"currency\":\"RUB\",\"paymentToolToken\":\"5Gz2nhE1eleFGBAcGe9SrA\",\"paymentSession\":\"2nTYVgk6h85O7vIVV9j4pA\",\"contactInfo\":{\"email\":\"bla@bla.ru\",\"phoneNumber\":null},\"ip\":\"10.100.2.1\",\"fingerprint\":\"test fingerprint\"}}";
