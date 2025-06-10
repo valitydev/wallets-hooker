@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.base.Cash;
 import dev.vality.fistful.withdrawal.Withdrawal;
-import dev.vality.swag.wallets.webhook.events.model.Asset;
 import dev.vality.swag.wallets.webhook.events.model.Event;
+import dev.vality.swag.wallets.webhook.events.model.WithdrawalBody;
 import dev.vality.swag.wallets.webhook.events.model.WithdrawalStarted;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.exception.GenerateMessageException;
@@ -79,9 +79,9 @@ public class WithdrawalCreatedHookMessageGenerator extends BaseHookMessageGenera
 
     }
 
-    private Asset initBody(Withdrawal event) {
+    private WithdrawalBody initBody(Withdrawal event) {
         Cash body = event.getBody();
-        var withdrawalBody = new Asset();
+        var withdrawalBody = new WithdrawalBody();
         withdrawalBody.setAmount(body.getAmount());
         withdrawalBody.setCurrency(body.getCurrency().getSymbolicCode());
         return withdrawalBody;

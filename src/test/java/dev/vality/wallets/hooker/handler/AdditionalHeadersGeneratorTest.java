@@ -9,13 +9,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class AdditionalHeadersGeneratorTest {
+class AdditionalHeadersGeneratorTest {
 
     AsymSigner signer = new AsymSigner();
     AdditionalHeadersGenerator additionalHeadersGenerator = new AdditionalHeadersGenerator(signer);
 
     @Test
-    public void generate() {
+    void generate() {
         KeyPair keyPair = signer.generateKeys();
         WebHookModel model = new WebHookModel();
         model.setPrivateKey(keyPair.getPrivKey());

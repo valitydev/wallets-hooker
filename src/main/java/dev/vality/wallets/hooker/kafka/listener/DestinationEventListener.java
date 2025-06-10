@@ -27,7 +27,7 @@ public class DestinationEventListener {
             containerFactory = "destinationEventListenerContainerFactory")
     public void listen(
             List<SinkEvent> batch,
-            @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) int offset,
             Acknowledgment ack) {
         log.info("Listening Destination: partition={}, offset={}, batch.size()={}", partition, offset, batch.size());

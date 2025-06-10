@@ -2,6 +2,7 @@ package dev.vality.wallets.hooker.config;
 
 
 import dev.vality.kafka.common.serialization.ThriftSerializer;
+import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.wallets.hooker.kafka.serde.SinkEventDeserializer;
 import dev.vality.webhook.dispatcher.WebhookMessage;
@@ -20,7 +21,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
 
 import java.util.Map;
 
@@ -70,7 +70,7 @@ public class KafkaConfig {
 
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(consumerConcurrency);
-        factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
+        factory.setCommonErrorHandler(ExponentialBackOffDefaultErrorHandlerFactory.create());
         factory.setBatchListener(true);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 

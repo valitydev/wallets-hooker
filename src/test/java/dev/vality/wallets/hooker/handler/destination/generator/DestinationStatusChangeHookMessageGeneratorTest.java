@@ -52,7 +52,7 @@ public class DestinationStatusChangeHookMessageGeneratorTest {
                     -1L);
 
     @Test
-    public void generate() throws IOException {
+    void generate() throws IOException {
         WebHookModel model = new WebHookModel();
         model.setId(1L);
         model.setEventTypes(Set.of(EventType.DESTINATION_AUTHORIZED));
@@ -105,7 +105,7 @@ public class DestinationStatusChangeHookMessageGeneratorTest {
     }
 
     @Test
-    public void generateException() {
+    void generateException() {
         WebHookMessageGeneratorServiceImpl mock = Mockito.mock(WebHookMessageGeneratorServiceImpl.class);
         DestinationStatusChangeHookMessageGenerator destinationCreatedHookMessageGenerator =
                 new DestinationStatusChangeHookMessageGenerator(

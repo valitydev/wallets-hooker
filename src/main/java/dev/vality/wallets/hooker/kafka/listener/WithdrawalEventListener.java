@@ -27,7 +27,7 @@ public class WithdrawalEventListener {
             containerFactory = "withdrawalEventListenerContainerFactory")
     public void listen(
             List<SinkEvent> batch,
-            @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) int offset,
             Acknowledgment ack) {
         log.info("Listening Withdrawal: partition={}, offset={}, batch.size()={}", partition, offset, batch.size());

@@ -1,10 +1,9 @@
 package dev.vality.wallets.hooker.config;
 
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
+import dev.vality.testcontainers.annotations.KafkaConfig;
 import dev.vality.testcontainers.annotations.kafka.KafkaTestcontainerSingleton;
 import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainerSingleton;
-import dev.vality.wallets.hooker.kafka.KafkaProducer;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,7 +23,7 @@ import java.lang.annotation.Target;
                 "kafka.topic.wallet.name",
                 "kafka.topic.withdrawal.name",
                 "kafka.topic.destination.name"})
-@DefaultSpringBootTest
-@Import(KafkaProducer.class)
+@SpringBootTest
+@KafkaConfig
 public @interface KafkaPostgresqlSpringBootITest {
 }

@@ -4,8 +4,7 @@ import dev.vality.fistful.destination.*;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.msgpack.Value;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
-import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainer;
+import dev.vality.wallets.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
@@ -14,7 +13,7 @@ import dev.vality.wallets.hooker.service.kafka.WalletEventService;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,9 +22,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@PostgresqlTestcontainer
-@DefaultSpringBootTest
-public class WaitingDestinationAndWalletHandlerTest {
+@PostgresqlSpringBootITest
+class WaitingDestinationAndWalletHandlerTest {
 
     @Autowired
     private WalletEventService walletEventService;
@@ -39,11 +37,11 @@ public class WaitingDestinationAndWalletHandlerTest {
     @Autowired
     private WebHookDao webHookDao;
 
-    @MockBean
+    @MockitoBean
     private WebHookMessageSenderService webHookMessageSenderService;
 
     @Test
-    public void handleWaitingDestinationAndWallet() throws InterruptedException {
+    void handleWaitingDestinationAndWallet() throws InterruptedException {
         WebHookModel webhook = TestBeanFactory.createWebhookModel();
 
         webHookDao.create(webhook);
