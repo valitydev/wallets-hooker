@@ -24,7 +24,7 @@ public class ResourceToJsonStringDestinationConverter implements Converter<Resou
             case BANK_CARD:
                 BankCard bankCard = new BankCard();
                 ResourceBankCard resourceBankCard = resource.getBankCard();
-                bankCard.setType(DestinationResource.TypeEnum.BANKCARD);
+                bankCard.setType(DestinationResource.TypeEnum.BANK_CARD);
                 bankCard.bin(resourceBankCard.getBankCard().getBin());
                 bankCard.cardNumberMask(resourceBankCard.getBankCard().getMaskedPan());
                 if (resourceBankCard.getBankCard().getPaymentSystem() != null) {
@@ -33,7 +33,7 @@ public class ResourceToJsonStringDestinationConverter implements Converter<Resou
                 return JsonUtil.toString(bankCard);
             case CRYPTO_WALLET:
                 CryptoWallet cryptoWallet = new CryptoWallet();
-                cryptoWallet.setType(DestinationResource.TypeEnum.CRYPTOWALLET);
+                cryptoWallet.setType(DestinationResource.TypeEnum.CRYPTO_WALLET);
                 ResourceCryptoWallet resourceCryptoWallet = resource.getCryptoWallet();
                 cryptoWallet.setCryptoWalletId(resourceCryptoWallet.getCryptoWallet().getId());
                 cryptoWallet.setCurrency(
@@ -47,7 +47,7 @@ public class ResourceToJsonStringDestinationConverter implements Converter<Resou
                 var swagDigitalWallet = resource.getDigitalWallet().getDigitalWallet();
                 digitalWallet.setDigitalWalletId(swagDigitalWallet.getId());
                 digitalWallet.setDigitalWalletProvider(swagDigitalWallet.getPaymentService().getId());
-                digitalWallet.setType(DestinationResource.TypeEnum.DIGITALWALLET);
+                digitalWallet.setType(DestinationResource.TypeEnum.DIGITAL_WALLET);
                 return JsonUtil.toString(digitalWallet);
             case GENERIC:
                 return initGenericType(resource);

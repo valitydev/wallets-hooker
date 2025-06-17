@@ -124,17 +124,16 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.652-ecf4977</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.179-54f1d58</version>
+            <version>1.180-8b04c7f</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.38-719220c-server</version>
+            <version>1.50-5299faf-epic-BG-165-server</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

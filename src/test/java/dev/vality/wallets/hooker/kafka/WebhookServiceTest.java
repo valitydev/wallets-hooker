@@ -3,11 +3,10 @@ package dev.vality.wallets.hooker.kafka;
 import dev.vality.fistful.webhooker.*;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.wallets.hooker.config.KafkaPostgresqlSpringBootITest;
+import dev.vality.wallets.hooker.handler.TestBeanFactory;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
 import dev.vality.wallets.hooker.service.kafka.DestinationEventService;
-import dev.vality.wallets.hooker.service.kafka.WalletEventService;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
-import dev.vality.wallets.hooker.handler.TestBeanFactory;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -32,7 +31,6 @@ class WebhookServiceTest {
 
     private static final String TEST = "/test";
     private static final String URL_2 = TEST + "/qwe";
-    private static final String KEY = "key";
 
     @Value("${kafka.topic.hook.name}")
     private String topicName;
@@ -44,24 +42,17 @@ class WebhookServiceTest {
     private WebhookManagerSrv.Iface requestHandler;
 
     @Autowired
-    private WebHookMessageSenderService webHookMessageSenderService;
-
-    @Autowired
     private DestinationEventService destinationEventService;
-
-    @Autowired
-    private WalletEventService walletEventService;
 
     @Autowired
     private WithdrawalEventService withdrawalEventService;
 
     @Test
-    void startTest() throws TException {
+    void testFlow() throws TException {
+        DestinationEventType created = DestinationEventType.created(new DestinationCreated());
         WebhookParams webhookParams = new WebhookParams()
-                .setEventFilter(new EventFilter()
-                        .setTypes(Set.of(EventType.destination(DestinationEventType.created(new DestinationCreated())),
-                                EventType.destination(DestinationEventType.authorized(new DestinationAuthorized())))))
-                .setIdentityId(TestBeanFactory.IDENTITY_ID)
+                .setEventFilter(new EventFilter().setTypes(Set.of(EventType.destination(created))))
+                .setPartyId(TestBeanFactory.PARTY_ID)
                 .setUrl(TEST);
         Webhook webhook = requestHandler.create(webhookParams);
 
@@ -73,18 +64,17 @@ class WebhookServiceTest {
 
         webhookParams.setUrl(URL_2);
         requestHandler.create(webhookParams);
-        List<Webhook> list = requestHandler.getList(webhookParams.getIdentityId());
+        List<Webhook> list = requestHandler.getList(webhookParams.getPartyId());
         assertEquals(2L, list.size());
 
         destinationEventService.handleEvents(List.of(TestBeanFactory.createDestination()));
         destinationEventService.handleEvents(List.of(TestBeanFactory.createDestinationAccount()));
-        walletEventService.handleEvents(List.of(TestBeanFactory.createWalletEvent()));
 
         webhookParams = new WebhookParams()
                 .setEventFilter(new EventFilter()
                         .setTypes(Set.of(EventType.withdrawal(WithdrawalEventType.started(new WithdrawalStarted())),
                                 EventType.withdrawal(WithdrawalEventType.succeeded(new WithdrawalSucceeded())))))
-                .setIdentityId(TestBeanFactory.IDENTITY_ID)
+                .setPartyId(TestBeanFactory.PARTY_ID)
                 .setWalletId(TestBeanFactory.SOURCE_WALLET_ID)
                 .setUrl(TEST);
         requestHandler.create(webhookParams);
@@ -97,7 +87,6 @@ class WebhookServiceTest {
         consumer.subscribe(List.of(topicName));
         ConsumerRecords<String, WebhookMessage> poll = consumer.poll(Duration.ofMillis(5000));
         Iterable<ConsumerRecord<String, WebhookMessage>> records = poll.records(topicName);
-        records.forEach(System.out::println);
 
         assertEquals(4L, poll.count());
 

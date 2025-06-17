@@ -16,7 +16,7 @@ public class WebHookParamsToWebHookConverter implements Converter<WebhookParams,
     @Override
     public WebHookModel convert(WebhookParams event) {
         WebHookModel webHookModel = WebHookModel.builder()
-                .identityId(event.getIdentityId())
+                .partyId(event.getPartyId())
                 .url(event.getUrl())
                 .walletId(event.getWalletId())
                 .eventTypes(EventTypeUtils.convertEventTypes(event))

@@ -9,10 +9,10 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EventTypeUtilsTest {
+class EventTypeUtilsTest {
 
     @Test
-    public void convertEventTypes() {
+    void convertEventTypes() {
         EventFilter eventFilter = new EventFilter();
         LinkedHashSet<EventType> types = new LinkedHashSet<>();
         DestinationEventType value = new DestinationEventType();

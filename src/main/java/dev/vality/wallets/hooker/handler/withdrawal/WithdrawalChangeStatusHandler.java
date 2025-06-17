@@ -7,7 +7,7 @@ import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.dao.withdrawal.WithdrawalReferenceDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.domain.enums.EventType;
-import dev.vality.wallets.hooker.domain.tables.pojos.WithdrawalIdentityWalletReference;
+import dev.vality.wallets.hooker.domain.tables.pojos.WithdrawalReference;
 import dev.vality.wallets.hooker.exception.HandleEventException;
 import dev.vality.wallets.hooker.handler.withdrawal.generator.WithdrawalStatusChangedHookMessageGenerator;
 import dev.vality.wallets.hooker.model.MessageGenParams;
@@ -37,10 +37,10 @@ public class WithdrawalChangeStatusHandler {
             String withdrawalId,
             EventType eventType) {
         try {
-            WithdrawalIdentityWalletReference reference = waitReferenceWithdrawal(withdrawalId);
+            var reference = waitReferenceWithdrawal(withdrawalId);
             Long parentId = Long.valueOf(reference.getEventId());
 
-            webHookDao.getByIdentityAndEventType(reference.getIdentityId(), eventType).stream()
+            webHookDao.getByPartyAndEventType(reference.getPartyId(), eventType).stream()
                     .filter(webHook -> webHook.getWalletId() == null
                             || webHook.getWalletId().equals(reference.getWalletId()))
                     .map(webhook -> generateWithdrawalStatusChangeHookMsg(
@@ -59,20 +59,20 @@ public class WithdrawalChangeStatusHandler {
         }
     }
 
-    private WithdrawalIdentityWalletReference waitReferenceWithdrawal(String withdrawalId) {
-        WithdrawalIdentityWalletReference withdrawalIdentityWalletReference = withdrawalReferenceDao.get(withdrawalId);
-        while (withdrawalIdentityWalletReference == null) {
+    private WithdrawalReference waitReferenceWithdrawal(String withdrawalId) {
+        var withdrawalReference = withdrawalReferenceDao.get(withdrawalId);
+        while (withdrawalReference == null) {
             log.info("Waiting withdrawal create: '{}'", withdrawalId);
             try {
                 Thread.sleep(waitingPollPeriod);
-                withdrawalIdentityWalletReference = withdrawalReferenceDao.get(withdrawalId);
+                withdrawalReference = withdrawalReferenceDao.get(withdrawalId);
             } catch (InterruptedException e) {
                 log.error("Error when waiting withdrawal create: {} e: ", withdrawalId, e);
                 Thread.currentThread().interrupt();
             }
         }
 
-        return withdrawalIdentityWalletReference;
+        return withdrawalReference;
     }
 
     private WebhookMessage generateWithdrawalStatusChangeHookMsg(

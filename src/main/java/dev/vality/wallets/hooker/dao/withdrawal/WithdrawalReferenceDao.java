@@ -1,11 +1,11 @@
 package dev.vality.wallets.hooker.dao.withdrawal;
 
-import dev.vality.wallets.hooker.domain.tables.pojos.WithdrawalIdentityWalletReference;
+import dev.vality.wallets.hooker.domain.tables.pojos.WithdrawalReference;
 
 public interface WithdrawalReferenceDao {
 
-    void create(WithdrawalIdentityWalletReference reference);
+    void create(WithdrawalReference reference);
 
-    WithdrawalIdentityWalletReference get(String id);
+    WithdrawalReference get(String id);
 
 }

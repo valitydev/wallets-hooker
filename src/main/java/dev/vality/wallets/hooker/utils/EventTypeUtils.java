@@ -34,10 +34,6 @@ public class EventTypeUtils {
             DestinationEventType destination = type.getDestination();
             if (destination.isSetCreated()) {
                 return EventType.DESTINATION_CREATED;
-            } else if (destination.isSetAuthorized()) {
-                return EventType.DESTINATION_AUTHORIZED;
-            } else if (destination.isSetUnauthorized()) {
-                return EventType.DESTINATION_UNAUTHORIZED;
             }
         }
         throw new UnknownEventTypeException(type.toString());

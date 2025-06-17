@@ -1,6 +1,7 @@
 package dev.vality.wallets.hooker.handler.destination.generator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.vality.swag.wallets.webhook.events.model.BankCard;
 import dev.vality.swag.wallets.webhook.events.model.Destination;
 import dev.vality.swag.wallets.webhook.events.model.DestinationCreated;
 import dev.vality.swag.wallets.webhook.events.model.DestinationResource;
@@ -29,7 +30,7 @@ public class DestinationCreatedHookMessageGeneratorTest {
     public static final long EVENT_ID = 1L;
     public static final String URL = "/url";
     public static final String WALLET_ID = "wallet_id";
-    public static final String IDENTITY_ID = "identity_id";
+    public static final String PARTY_ID = "party_id";
     public static final String SOURCE_ID = "sourceId";
     public static final String DESTINATION_ID = "destination_id";
 
@@ -52,7 +53,7 @@ public class DestinationCreatedHookMessageGeneratorTest {
         model.setId(1L);
         model.setEventTypes(Set.of(EventType.DESTINATION_CREATED));
         model.setEnabled(true);
-        model.setIdentityId(IDENTITY_ID);
+        model.setPartyId(PARTY_ID);
         model.setUrl(URL);
         model.setWalletId(WALLET_ID);
 
@@ -61,9 +62,14 @@ public class DestinationCreatedHookMessageGeneratorTest {
         model.setPubKey(keyPair.getPublKey());
 
         Destination destination = new Destination();
-        destination.setIdentity(IDENTITY_ID);
         destination.setId(DESTINATION_ID);
-        destination.setResource(new DestinationResource().type(DestinationResource.TypeEnum.BANKCARD));
+        BankCard bankCard = new BankCard();
+        bankCard.setBin("123456");
+        bankCard.setCardNumberMask("1234*******6789");
+        bankCard.setLastDigits("1234");
+        bankCard.setType(DestinationResource.TypeEnum.BANK_CARD);
+        bankCard.setPaymentSystem("visa");
+        destination.setResource(bankCard);
         destination.setCurrency("RUB");
 
         DestinationMessage event = new DestinationMessage();
@@ -90,6 +96,8 @@ public class DestinationCreatedHookMessageGeneratorTest {
         byte[] requestBody = generate.getRequestBody();
 
         DestinationCreated value = objectMapper.readValue(requestBody, DestinationCreated.class);
-        assertNotNull(IDENTITY_ID, value.getDestination().getIdentity());
+        assertNotNull(PARTY_ID, value.getDestination().getParty());
+        assertEquals(DestinationResource.TypeEnum.BANK_CARD, value.getDestination().getResource().getType());
+        assertEquals(DESTINATION_ID, value.getDestination().getId());
     }
 }

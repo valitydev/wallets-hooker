@@ -25,22 +25,13 @@ public class WebHookConverterUtils {
     }
 
     private static EventType resolveEventType(dev.vality.wallets.hooker.domain.enums.EventType type) {
-        switch (type) {
-            case WITHDRAWAL_CREATED:
-                return EventType.withdrawal(WithdrawalEventType.started(new WithdrawalStarted()));
-            case WITHDRAWAL_FAILED:
-                return EventType.withdrawal(WithdrawalEventType.failed(new WithdrawalFailed()));
-            case WITHDRAWAL_SUCCEEDED:
-                return EventType.withdrawal(WithdrawalEventType.succeeded(new WithdrawalSucceeded()));
-            case DESTINATION_AUTHORIZED:
-                return EventType.destination(DestinationEventType.authorized(new DestinationAuthorized()));
-            case DESTINATION_UNAUTHORIZED:
-                return EventType.destination(DestinationEventType.unauthorized(new DestinationUnauthorized()));
-            case DESTINATION_CREATED:
-                return EventType.destination(DestinationEventType.created(new DestinationCreated()));
-            default:
-                throw new UnknownEventTypeException();
-        }
+        return switch (type) {
+            case WITHDRAWAL_CREATED -> EventType.withdrawal(WithdrawalEventType.started(new WithdrawalStarted()));
+            case WITHDRAWAL_FAILED -> EventType.withdrawal(WithdrawalEventType.failed(new WithdrawalFailed()));
+            case WITHDRAWAL_SUCCEEDED -> EventType.withdrawal(WithdrawalEventType.succeeded(new WithdrawalSucceeded()));
+            case DESTINATION_CREATED -> EventType.destination(DestinationEventType.created(new DestinationCreated()));
+            default -> throw new UnknownEventTypeException();
+        };
     }
 
 }

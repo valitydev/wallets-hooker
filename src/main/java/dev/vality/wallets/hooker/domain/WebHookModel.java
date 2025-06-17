@@ -15,7 +15,7 @@ public class WebHookModel {
     @ToString.Include
     private Long id;
     @ToString.Include
-    private String identityId;
+    private String partyId;
     @ToString.Include
     private String walletId;
     @ToString.Include
