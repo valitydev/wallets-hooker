@@ -1,4 +1,3 @@
-ALTER TABLE whook.webhook ALTER identity_id DROP NOT NULL;
 ALTER TABLE whook.webhook DROP COLUMN identity_id;
 ALTER TABLE whook.webhook ADD COLUMN party_id character varying;
 
