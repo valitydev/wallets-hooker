@@ -51,12 +51,12 @@ public class WithdrawalCreatedHookMessageGenerator extends BaseHookMessageGenera
             withdrawal.setExternalID(event.getExternalId());
             WithdrawalStarted withdrawalStarted = new WithdrawalStarted();
             withdrawalStarted.setWithdrawal(withdrawal);
-            withdrawalStarted.setEventType(Event.EventTypeEnum.WITHDRAWALSTARTED);
+            withdrawalStarted.setEventType(Event.EventTypeEnum.WITHDRAWAL_STARTED);
             withdrawalStarted.setEventID(messageGenParams.getEventId().toString());
             withdrawalStarted.setOccuredAt(OffsetDateTime.parse(
                     messageGenParams.getCreatedAt(),
                     DateTimeFormatter.ISO_DATE_TIME));
-            withdrawalStarted.setTopic(Event.TopicEnum.WITHDRAWALTOPIC);
+            withdrawalStarted.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
 
             String requestBody = objectMapper.writeValueAsString(withdrawalStarted);
 

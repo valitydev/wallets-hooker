@@ -1,17 +1,12 @@
 package dev.vality.wallets.hooker.handler.destination;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.destination.AccountChange;
 import dev.vality.fistful.destination.TimestampedChange;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.wallets.hooker.dao.destination.DestinationMessageDaoImpl;
-import dev.vality.wallets.hooker.dao.destination.DestinationReferenceDao;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.domain.enums.EventType;
-import dev.vality.wallets.hooker.domain.tables.pojos.DestinationIdentityReference;
 import dev.vality.wallets.hooker.domain.tables.pojos.DestinationMessage;
 import dev.vality.wallets.hooker.exception.HandleEventException;
 import dev.vality.wallets.hooker.handler.destination.generator.DestinationCreatedHookMessageGenerator;
@@ -22,22 +17,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DestinationAccountChangeHandler implements DestinationEventHandler {
 
-    public static final String EXTERNAL_ID = "externalID";
-
-    private final DestinationReferenceDao destinationReferenceDao;
     private final DestinationMessageDaoImpl destinationMessageDao;
     private final DestinationCreatedHookMessageGenerator destinationCreatedHookMessageGenerator;
     private final WebHookDao webHookDao;
     private final WebHookMessageSenderService webHookMessageSenderService;
-
-    private final ObjectMapper objectMapper;
 
     @Override
     public boolean accept(TimestampedChange change) {
@@ -50,15 +38,14 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
         try {
             String destinationId = event.getSourceId();
             AccountChange account = change.getChange().getAccount();
-            String identityId = account.getCreated().getIdentity();
+            String partyId = account.getCreated().getPartyId();
 
-            log.info("Start handling DestinationAccountCreatedChange: destinationId={}, identityId={}",
-                    destinationId, identityId);
+            log.info("Start handling DestinationAccountCreatedChange: destinationId={}, partyId={}",
+                    destinationId, partyId);
 
             DestinationMessage destinationMessage = destinationMessageDao.get(destinationId);
-            createDestinationReference(event, identityId, getExternalId(destinationMessage));
 
-            webHookDao.getByIdentityAndEventType(identityId, EventType.DESTINATION_CREATED)
+            webHookDao.getByPartyAndEventType(partyId, EventType.DESTINATION_CREATED)
                     .stream()
                     .map(webhook -> generateDestinationCreateHookMsg(
                             destinationMessage,
@@ -68,19 +55,13 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
                             event.getCreatedAt()))
                     .forEach(webHookMessageSenderService::send);
 
-            log.info("Finish handling DestinationAccountCreatedChange: destinationId={}, identityId={}",
-                    destinationId, identityId);
+            log.info("Finish handling DestinationAccountCreatedChange: destinationId={}, partyId={}",
+                    destinationId, partyId);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error while handling DestinationAccountCreatedChange: {}", change, e);
             throw new HandleEventException("Error while handling DestinationAccountCreatedChange", e);
         }
-    }
-
-    private String getExternalId(DestinationMessage destinationMessage) throws JsonProcessingException {
-        JsonNode jsonNode = objectMapper.readTree(destinationMessage.getMessage());
-        JsonNode externalID = jsonNode.get(EXTERNAL_ID);
-        return externalID != null ? externalID.asText() : null;
     }
 
     private WebhookMessage generateDestinationCreateHookMsg(
@@ -95,15 +76,5 @@ public class DestinationAccountChangeHandler implements DestinationEventHandler 
                 .createdAt(createdAt)
                 .build();
         return destinationCreatedHookMessageGenerator.generate(destinationMessage, webhook, messageGenParams);
-    }
-
-    private void createDestinationReference(MachineEvent event, String identityId, String externalID) {
-        DestinationIdentityReference destinationIdentityReference = new DestinationIdentityReference();
-        destinationIdentityReference.setDestinationId(event.getSourceId());
-        destinationIdentityReference.setIdentityId(identityId);
-        destinationIdentityReference.setEventId(String.valueOf(event.getEventId()));
-        destinationIdentityReference.setExternalId(externalID);
-
-        destinationReferenceDao.create(destinationIdentityReference);
     }
 }

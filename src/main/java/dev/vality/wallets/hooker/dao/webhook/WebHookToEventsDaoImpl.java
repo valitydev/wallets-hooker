@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.util.List;
 
-import static dev.vality.wallets.hooker.domain.tables.WalletIdentityReference.WALLET_IDENTITY_REFERENCE;
 import static dev.vality.wallets.hooker.domain.tables.WebhookToEvents.WEBHOOK_TO_EVENTS;
 
 @Component

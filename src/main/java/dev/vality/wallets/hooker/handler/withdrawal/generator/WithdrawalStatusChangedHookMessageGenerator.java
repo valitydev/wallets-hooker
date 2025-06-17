@@ -91,19 +91,19 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             WithdrawalFailed withdrawalFailed = new WithdrawalFailed()
                     .withdrawalID(withdrawalId)
                     .externalID(externalId);
-            withdrawalFailed.setEventType(Event.EventTypeEnum.WITHDRAWALFAILED);
+            withdrawalFailed.setEventType(Event.EventTypeEnum.WITHDRAWAL_FAILED);
             withdrawalFailed.setEventID(eventId.toString());
             withdrawalFailed.setOccuredAt(OffsetDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME));
-            withdrawalFailed.setTopic(Event.TopicEnum.WITHDRAWALTOPIC);
+            withdrawalFailed.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
             return objectMapper.writeValueAsString(withdrawalFailed);
         } else if (status.isSetSucceeded()) {
             WithdrawalSucceeded withdrawalSucceeded = new WithdrawalSucceeded()
                     .withdrawalID(withdrawalId)
                     .externalID(externalId);
-            withdrawalSucceeded.setEventType(Event.EventTypeEnum.WITHDRAWALSUCCEEDED);
+            withdrawalSucceeded.setEventType(Event.EventTypeEnum.WITHDRAWAL_SUCCEEDED);
             withdrawalSucceeded.setEventID(eventId.toString());
             withdrawalSucceeded.setOccuredAt(OffsetDateTime.parse(createdAt));
-            withdrawalSucceeded.setTopic(Event.TopicEnum.WITHDRAWALTOPIC);
+            withdrawalSucceeded.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
             return objectMapper.writeValueAsString(withdrawalSucceeded);
         } else {
             log.error("Unknown WithdrawalStatus status: {} withdrawalId: {}", status, withdrawalId);

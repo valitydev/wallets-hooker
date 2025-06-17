@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter;
 public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGenerator<DestinationMessage> {
 
     public static final String DESTINATION = "destination";
-    public static final String IDENTITY = "identity";
+    public static final String PARTY = "party";
     private final WebHookMessageGeneratorServiceImpl<DestinationMessage> generatorService;
     private final ObjectMapper objectMapper;
     private final AdditionalHeadersGenerator additionalHeadersGenerator;
@@ -48,14 +48,7 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
             WebHookModel model,
             MessageGenParams messageGenParams) {
         try {
-            DestinationCreated destinationCreated = new DestinationCreated();
-            destinationCreated.setEventID(messageGenParams.getEventId().toString());
-            destinationCreated.setEventType(Event.EventTypeEnum.DESTINATIONCREATED);
-            OffsetDateTime parse = OffsetDateTime.parse(
-                    messageGenParams.getCreatedAt(),
-                    DateTimeFormatter.ISO_DATE_TIME);
-            destinationCreated.setOccuredAt(parse);
-            destinationCreated.setTopic(Event.TopicEnum.DESTINATIONTOPIC);
+            DestinationCreated destinationCreated = buildDestinationCreated(messageGenParams);
             String requestBody = objectMapper.writeValueAsString(destinationCreated);
 
             String messageString = initResultMessage(event, model, requestBody);
@@ -66,7 +59,7 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
             webhookMessage.setEventId(messageGenParams.getEventId());
 
             log.info("Webhook message from destination_event_created was generated, destinationId={}, model={}",
-                    messageGenParams.getSourceId(), model.toString());
+                    messageGenParams.getSourceId(), model);
 
             return webhookMessage;
         } catch (Exception e) {
@@ -78,10 +71,22 @@ public class DestinationCreatedHookMessageGenerator extends BaseHookMessageGener
 
     }
 
+    private DestinationCreated buildDestinationCreated(MessageGenParams messageGenParams) {
+        DestinationCreated destinationCreated = new DestinationCreated();
+        destinationCreated.setEventID(messageGenParams.getEventId().toString());
+        destinationCreated.setEventType(Event.EventTypeEnum.DESTINATION_CREATED);
+        OffsetDateTime parse = OffsetDateTime.parse(
+                messageGenParams.getCreatedAt(),
+                DateTimeFormatter.ISO_DATE_TIME);
+        destinationCreated.setOccuredAt(parse);
+        destinationCreated.setTopic(Event.TopicEnum.DESTINATION_TOPIC);
+        return destinationCreated;
+    }
+
     private String initResultMessage(DestinationMessage event, WebHookModel model, String requestBody)
             throws JsonProcessingException {
         JsonNode jsonNodeRoot = objectMapper.readTree(event.getMessage());
-        JsonNode resultDestinationNode = ((ObjectNode) jsonNodeRoot).put(IDENTITY, model.getIdentityId());
+        JsonNode resultDestinationNode = ((ObjectNode) jsonNodeRoot).put(PARTY, model.getPartyId());
         JsonNode requestBodyJson = objectMapper.readTree(requestBody);
         JsonNode messageResult = ((ObjectNode) requestBodyJson).set(DESTINATION, resultDestinationNode);
         return objectMapper.writeValueAsString(messageResult);

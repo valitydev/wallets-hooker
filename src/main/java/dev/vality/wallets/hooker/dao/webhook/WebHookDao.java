@@ -14,9 +14,7 @@ public interface WebHookDao {
 
     WebHookModel getById(long id);
 
-    List<WebHookModel> getModelByIdentityAndWalletId(String identityId, String walletId, EventType eventType);
+    List<Webhook> getByParty(String partyId);
 
-    List<Webhook> getByIdentity(String identityId);
-
-    List<WebHookModel> getByIdentityAndEventType(String identityId, EventType eventType);
+    List<WebHookModel> getByPartyAndEventType(String partyId, EventType eventType);
 }
