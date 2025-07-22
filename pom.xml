@@ -132,8 +132,8 @@
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
-            <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.52-5dd30f2-epic-BG-165-server</version>
+            <artifactId>swag-wallets-webhook-events-server</artifactId>
+            <version>1.41-1174f82</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
