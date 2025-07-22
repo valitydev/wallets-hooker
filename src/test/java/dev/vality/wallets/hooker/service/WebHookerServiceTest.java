@@ -47,16 +47,16 @@ class WebHookerServiceTest {
         ArrayList<dev.vality.wallets.hooker.domain.tables.pojos.Webhook> webhooks = new ArrayList<>();
         dev.vality.wallets.hooker.domain.tables.pojos.Webhook webhook =
                 new dev.vality.wallets.hooker.domain.tables.pojos.Webhook();
-        webhook.setIdentityId(id);
+        webhook.setPartyId(id);
         webhooks.add(webhook);
-        Mockito.when(webHookDao.getByIdentity(id)).thenReturn(webhooks);
+        Mockito.when(webHookDao.getByParty(id)).thenReturn(webhooks);
         Webhook hook = new Webhook();
-        hook.setIdentityId(id);
+        hook.setPartyId(id);
         Mockito.when(webHookConverter.convert(webhook)).thenReturn(hook);
         List<Webhook> listWebHooks = webHookerService.getList(id);
 
         assertFalse(listWebHooks.isEmpty());
-        assertEquals(id, listWebHooks.get(0).identity_id);
+        assertEquals(id, listWebHooks.get(0).party_id);
     }
 
 }

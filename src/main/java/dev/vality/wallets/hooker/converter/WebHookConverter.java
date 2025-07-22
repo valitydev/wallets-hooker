@@ -1,12 +1,11 @@
 package dev.vality.wallets.hooker.converter;
 
-import dev.vality.wallets.hooker.dao.identity.IdentityKeyDao;
+import dev.vality.wallets.hooker.dao.party.PartyKeyDao;
 import dev.vality.wallets.hooker.dao.webhook.WebHookToEventsDao;
-import dev.vality.wallets.hooker.utils.WebHookConverterUtils;
 import dev.vality.wallets.hooker.domain.enums.EventType;
-import dev.vality.wallets.hooker.domain.tables.pojos.IdentityKey;
 import dev.vality.wallets.hooker.domain.tables.pojos.Webhook;
 import dev.vality.wallets.hooker.domain.tables.pojos.WebhookToEvents;
+import dev.vality.wallets.hooker.utils.WebHookConverterUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
@@ -20,12 +19,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WebHookConverter implements Converter<Webhook, dev.vality.fistful.webhooker.Webhook> {
 
-    private final IdentityKeyDao identityKeyDao;
+    private final PartyKeyDao partyKeyDao;
     private final WebHookToEventsDao webHookToEventsDao;
 
     @Override
     public dev.vality.fistful.webhooker.Webhook convert(Webhook webhook) {
-        IdentityKey identityKey = identityKeyDao.getByIdentity(webhook.getIdentityId());
+        var partyKey = partyKeyDao.getByParty(webhook.getPartyId());
         Set<EventType> eventTypes = webHookToEventsDao.get(webhook.getId()).stream()
                 .map(WebhookToEvents::getEventType)
                 .collect(Collectors.toSet());
@@ -33,9 +32,9 @@ public class WebHookConverter implements Converter<Webhook, dev.vality.fistful.w
         var webhookDamsel = new dev.vality.fistful.webhooker.Webhook();
         webhookDamsel.setId(webhook.getId());
         webhookDamsel.setEnabled(webhook.getEnabled());
-        webhookDamsel.setIdentityId(webhook.getIdentityId());
+        webhookDamsel.setPartyId(webhook.getPartyId());
         webhookDamsel.setWalletId(webhook.getWalletId());
-        webhookDamsel.setPubKey(identityKey.getPubKey());
+        webhookDamsel.setPubKey(partyKey.getPubKey());
         webhookDamsel.setUrl(webhook.getUrl());
         webhookDamsel.setEventFilter(WebHookConverterUtils.generateEventFilter(eventTypes));
 

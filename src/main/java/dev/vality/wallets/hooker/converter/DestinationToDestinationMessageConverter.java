@@ -17,6 +17,7 @@ public class DestinationToDestinationMessageConverter
         var destination = new dev.vality.swag.wallets.webhook.events.model.Destination();
         destination.setExternalID(event.getExternalId());
         destination.setName(event.getName());
+        destination.setParty(event.getPartyId());
         // todo metadata null?
         destination.setMetadata(null);
         log.info("destinationDamsel has been converted, destination={}", destination);

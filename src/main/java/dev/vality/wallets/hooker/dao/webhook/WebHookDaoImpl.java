@@ -1,26 +1,23 @@
 package dev.vality.wallets.hooker.dao.webhook;
 
+import com.zaxxer.hikari.HikariDataSource;
 import dev.vality.mapper.RecordRowMapper;
 import dev.vality.wallets.hooker.dao.AbstractDao;
-import dev.vality.wallets.hooker.dao.condition.ConditionParameterSource;
-import dev.vality.wallets.hooker.dao.identity.IdentityKeyDao;
+import dev.vality.wallets.hooker.dao.party.PartyKeyDao;
 import dev.vality.wallets.hooker.dao.webhook.mapper.WebHookModelRowMapper;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.domain.enums.EventType;
-import dev.vality.wallets.hooker.domain.tables.pojos.IdentityKey;
+import dev.vality.wallets.hooker.domain.tables.pojos.PartyKey;
 import dev.vality.wallets.hooker.domain.tables.pojos.Webhook;
 import dev.vality.wallets.hooker.domain.tables.pojos.WebhookToEvents;
 import dev.vality.wallets.hooker.domain.tables.records.WebhookRecord;
 import dev.vality.wallets.hooker.service.crypt.KeyPair;
 import dev.vality.wallets.hooker.service.crypt.Signer;
-import com.zaxxer.hikari.HikariDataSource;
 import dev.vality.wallets.hooker.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.Operator;
 import org.jooq.Query;
 import org.jooq.Record7;
 import org.jooq.SelectOnConditionStep;
-import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -29,10 +26,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.vality.wallets.hooker.domain.tables.IdentityKey.IDENTITY_KEY;
+import static dev.vality.wallets.hooker.domain.tables.PartyKey.PARTY_KEY;
 import static dev.vality.wallets.hooker.domain.tables.Webhook.WEBHOOK;
 import static dev.vality.wallets.hooker.domain.tables.WebhookToEvents.WEBHOOK_TO_EVENTS;
-import static org.jooq.Comparator.EQUALS;
 
 @Component
 @Slf4j
@@ -42,37 +38,36 @@ public class WebHookDaoImpl extends AbstractDao implements WebHookDao {
     private final RowMapper<Webhook> webhookRowMapper;
     private final RowMapper<WebHookModel> webHookModelRowMapper;
     private final WebHookToEventsDao webHookToEventsDao;
-    private final IdentityKeyDao identityKeyDao;
+    private final PartyKeyDao partyKeyDao;
     private final Signer signer;
 
     @Autowired
-    public WebHookDaoImpl(HikariDataSource dataSource, WebHookToEventsDao webHookToEventsDao,
-                          IdentityKeyDao identityKeyDao,
+    public WebHookDaoImpl(HikariDataSource dataSource,
+                          WebHookToEventsDao webHookToEventsDao,
+                          PartyKeyDao partyKeyDao,
                           Signer signer) {
         super(dataSource);
         this.webHookToEventsDao = webHookToEventsDao;
-        this.identityKeyDao = identityKeyDao;
         this.signer = signer;
         this.webhookRowMapper = new RecordRowMapper<>(WEBHOOK, Webhook.class);
         this.webHookModelRowMapper = new WebHookModelRowMapper();
+        this.partyKeyDao = partyKeyDao;
     }
 
     @Override
     public Webhook create(WebHookModel webHookModel) {
-        String identityId = webHookModel.getIdentityId();
+        String partyId = webHookModel.getPartyId();
 
-        IdentityKey identityKey = identityKeyDao.getByIdentity(identityId);
+        var partyKey = partyKeyDao.getByParty(partyId);
 
-        if (identityKey == null) {
+        if (partyKey == null) {
+            partyKey = new PartyKey();
+            partyKey.setPartyId(partyId);
             KeyPair keyPair = signer.generateKeys();
-            String publKey = keyPair.getPublKey();
+            partyKey.setPubKey(keyPair.getPublKey());
+            partyKey.setPrivKey(keyPair.getPrivKey());
 
-            identityKey = new IdentityKey();
-            identityKey.setIdentityId(identityId);
-            identityKey.setPubKey(publKey);
-            identityKey.setPrivKey(keyPair.getPrivKey());
-
-            identityKeyDao.create(identityKey);
+            partyKeyDao.create(partyKey);
         }
 
         WebhookRecord record = getDslContext().newRecord(WEBHOOK, webHookModel);
@@ -83,7 +78,7 @@ public class WebHookDaoImpl extends AbstractDao implements WebHookDao {
                 .doNothing()
                 .returning(
                         WEBHOOK.ID,
-                        WEBHOOK.IDENTITY_ID,
+                        WEBHOOK.PARTY_ID,
                         WEBHOOK.ENABLED,
                         WEBHOOK.URL,
                         WEBHOOK.WALLET_ID
@@ -116,15 +111,15 @@ public class WebHookDaoImpl extends AbstractDao implements WebHookDao {
         Query query = getDslContext()
                 .select(
                         WEBHOOK.ID,
-                        WEBHOOK.IDENTITY_ID,
+                        WEBHOOK.PARTY_ID,
                         WEBHOOK.ENABLED,
                         WEBHOOK.URL,
                         WEBHOOK.WALLET_ID,
-                        IDENTITY_KEY.PUB_KEY,
-                        IDENTITY_KEY.PRIV_KEY
+                        PARTY_KEY.PUB_KEY,
+                        PARTY_KEY.PRIV_KEY
                 )
                 .from(WEBHOOK)
-                .leftJoin(IDENTITY_KEY).on(WEBHOOK.IDENTITY_ID.eq(IDENTITY_KEY.IDENTITY_ID))
+                .leftJoin(PARTY_KEY).on(WEBHOOK.PARTY_ID.eq(PARTY_KEY.PARTY_ID))
                 .where(WEBHOOK.ID.eq(id));
 
         WebHookModel webHookModel = fetchOne(query, webHookModelRowMapper);
@@ -136,27 +131,10 @@ public class WebHookDaoImpl extends AbstractDao implements WebHookDao {
                             .collect(Collectors.toSet())
             );
 
-            log.info("webhook has been got, webHookModel={} ", webHookModel.toString());
+            log.info("webhook has been got, webHookModel={} ", webHookModel);
         }
 
         return webHookModel;
-    }
-
-    @Override
-    public List<WebHookModel> getModelByIdentityAndWalletId(String identityId, String walletId, EventType eventType) {
-        Query query = createSelectForWebHookModel()
-                .where(
-                        appendConditions(
-                                DSL.trueCondition(),
-                                Operator.AND,
-                                new ConditionParameterSource()
-                                        .addValue(WEBHOOK.IDENTITY_ID, identityId, EQUALS)
-                                        .addValue(WEBHOOK.WALLET_ID, walletId, EQUALS)
-                        )
-                )
-                .and(WEBHOOK_TO_EVENTS.EVENT_TYPE.eq(eventType))
-                .limit(LIMIT);
-        return getWebHookModels(query);
     }
 
     private SelectOnConditionStep<
@@ -164,31 +142,31 @@ public class WebHookDaoImpl extends AbstractDao implements WebHookDao {
         return getDslContext()
                 .select(
                         WEBHOOK.ID,
-                        WEBHOOK.IDENTITY_ID,
+                        WEBHOOK.PARTY_ID,
                         WEBHOOK.ENABLED,
                         WEBHOOK.URL,
                         WEBHOOK.WALLET_ID,
-                        IDENTITY_KEY.PUB_KEY,
-                        IDENTITY_KEY.PRIV_KEY
+                        PARTY_KEY.PUB_KEY,
+                        PARTY_KEY.PRIV_KEY
                 )
                 .from(WEBHOOK)
                 .leftJoin(WEBHOOK_TO_EVENTS).on(WEBHOOK.ID.eq(WEBHOOK_TO_EVENTS.HOOK_ID))
-                .leftJoin(IDENTITY_KEY).on(WEBHOOK.IDENTITY_ID.eq(IDENTITY_KEY.IDENTITY_ID));
+                .leftJoin(PARTY_KEY).on(WEBHOOK.PARTY_ID.eq(PARTY_KEY.PARTY_ID));
     }
 
     @Override
-    public List<Webhook> getByIdentity(String identityId) {
+    public List<Webhook> getByParty(String partyId) {
         Query query = getDslContext()
                 .selectFrom(WEBHOOK)
-                .where(WEBHOOK.IDENTITY_ID.eq(identityId))
+                .where(WEBHOOK.PARTY_ID.eq(partyId))
                 .limit(LIMIT);
-        return getSafeWebHook(query, () -> log.info("webhooks has been got, identityId={}", identityId));
+        return getSafeWebHook(query, () -> log.info("webhooks has been got, partyId={}", partyId));
     }
 
     @Override
-    public List<WebHookModel> getByIdentityAndEventType(String identityId, EventType eventType) {
+    public List<WebHookModel> getByPartyAndEventType(String partyId, EventType eventType) {
         Query query = createSelectForWebHookModel()
-                .where(WEBHOOK.IDENTITY_ID.eq(identityId)
+                .where(WEBHOOK.PARTY_ID.eq(partyId)
                         .and(WEBHOOK_TO_EVENTS.EVENT_TYPE.eq(eventType)))
                 .limit(LIMIT);
         return getWebHookModels(query);

@@ -18,7 +18,7 @@ public class WebHookModelToWebHookConverter implements Converter<WebHookModel, W
         Webhook webhook = new Webhook();
         webhook.setId(event.getId());
         webhook.setEnabled(event.getEnabled());
-        webhook.setIdentityId(event.getIdentityId());
+        webhook.setPartyId(event.getPartyId());
         webhook.setWalletId(event.getWalletId());
         webhook.setPubKey(event.getPubKey());
         webhook.setEventFilter(WebHookConverterUtils.generateEventFilter(event.getEventTypes()));

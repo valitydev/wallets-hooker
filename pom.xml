@@ -124,17 +124,16 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.652-ecf4977</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.179-54f1d58</version>
+            <version>1.180-8b04c7f</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
-            <artifactId>swag-wallets-webhook-events</artifactId>
-            <version>1.38-719220c-server</version>
+            <artifactId>swag-wallets-webhook-events-server</artifactId>
+            <version>1.41-1174f82</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -337,22 +336,6 @@
                         <version>2.12.0</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.38</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>
         </plugins>
     </build>

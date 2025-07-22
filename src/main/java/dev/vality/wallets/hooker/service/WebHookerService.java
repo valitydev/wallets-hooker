@@ -27,14 +27,14 @@ public class WebHookerService implements WebhookManagerSrv.Iface {
     private final WebHookModelToWebHookConverter webHookModelToWebHookConverter;
 
     @Override
-    public List<Webhook> getList(String identityId) {
-        log.info("Start get webhooks, identityId={}", identityId);
+    public List<Webhook> getList(String partyId) {
+        log.info("Start get webhooks, partyId={}", partyId);
 
-        List<Webhook> webhooks = webHookDao.getByIdentity(identityId).stream()
+        List<Webhook> webhooks = webHookDao.getByParty(partyId).stream()
                 .map(webHookConverter::convert)
                 .collect(Collectors.toList());
 
-        log.info("Finish get webhooks, identityId={}, size={}", identityId, webhooks.size());
+        log.info("Finish get webhooks, partyId={}, size={}", partyId, webhooks.size());
 
         return webhooks;
     }
