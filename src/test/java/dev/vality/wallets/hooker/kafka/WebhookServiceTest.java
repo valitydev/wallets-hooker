@@ -6,6 +6,7 @@ import dev.vality.wallets.hooker.config.KafkaPostgresqlSpringBootITest;
 import dev.vality.wallets.hooker.handler.TestBeanFactory;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
 import dev.vality.wallets.hooker.service.WithdrawalClient;
+import dev.vality.fistful.withdrawal.ManagementSrv;
 import dev.vality.wallets.hooker.service.kafka.DestinationEventService;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
 import dev.vality.webhook.dispatcher.WebhookMessage;
@@ -33,6 +34,9 @@ class WebhookServiceTest {
 
     @MockitoBean
     private WithdrawalClient withdrawalClient;
+
+    @MockitoBean
+    private ManagementSrv.Iface withdrawalFistfulClient;
 
     private static final String TEST = "/test";
     private static final String URL_2 = TEST + "/qwe";

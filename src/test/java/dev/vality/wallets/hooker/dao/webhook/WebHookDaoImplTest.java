@@ -4,8 +4,11 @@ import dev.vality.wallets.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.domain.enums.EventType;
 import dev.vality.wallets.hooker.domain.tables.pojos.Webhook;
+import dev.vality.wallets.hooker.service.WithdrawalClient;
+import dev.vality.fistful.withdrawal.ManagementSrv;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -20,6 +23,12 @@ public class WebHookDaoImplTest {
 
     @Autowired
     private WebHookDao webHookDao;
+
+    @MockitoBean
+    private WithdrawalClient withdrawalClient;
+
+    @MockitoBean
+    private ManagementSrv.Iface withdrawalFistfulClient;
 
     @Test
     void create() {

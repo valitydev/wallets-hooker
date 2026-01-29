@@ -6,6 +6,7 @@ import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
 import dev.vality.wallets.hooker.service.WithdrawalClient;
+import dev.vality.fistful.withdrawal.ManagementSrv;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ class WithdrawalEventHandlerTest {
 
     @MockitoBean
     private WithdrawalClient withdrawalClient;
+
+    @MockitoBean
+    private ManagementSrv.Iface withdrawalFistfulClient;
 
     @Test
     void handleWithdrawalCreatedAndAndStatusChange() throws InterruptedException {
