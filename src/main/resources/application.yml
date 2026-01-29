@@ -100,4 +100,4 @@ testcontainers:
     tag: '11.4'
   kafka:
     confluent:
-      tag: '6.2.0'
+      tag: '7.8.0'
