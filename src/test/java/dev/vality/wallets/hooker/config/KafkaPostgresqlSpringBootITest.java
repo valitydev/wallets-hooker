@@ -1,7 +1,8 @@
 package dev.vality.wallets.hooker.config;
 
-import dev.vality.testcontainers.annotations.KafkaConfig;
+import dev.vality.testcontainers.annotations.KafkaTestConfig;
 import dev.vality.testcontainers.annotations.kafka.KafkaTestcontainerSingleton;
+import dev.vality.testcontainers.annotations.kafka.constants.Provider;
 import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainerSingleton;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,6 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @PostgresqlTestcontainerSingleton
 @KafkaTestcontainerSingleton(
+        provider = Provider.CONFLUENT,
         properties = {
                 "kafka.topic.wallet.listener.enabled=true",
                 "kafka.topic.withdrawal.listener.enabled=true",
@@ -24,6 +26,6 @@ import java.lang.annotation.Target;
                 "kafka.topic.withdrawal.name",
                 "kafka.topic.destination.name"})
 @SpringBootTest
-@KafkaConfig
+@KafkaTestConfig
 public @interface KafkaPostgresqlSpringBootITest {
 }

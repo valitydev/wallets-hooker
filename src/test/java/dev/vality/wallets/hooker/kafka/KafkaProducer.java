@@ -2,7 +2,7 @@ package dev.vality.wallets.hooker.kafka;
 
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.eventsink.SinkEvent;
-import dev.vality.testcontainers.annotations.kafka.config.KafkaProducerConfig;
+import dev.vality.testcontainers.annotations.kafka.config.KafkaProducerTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TBase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @TestComponent
-@Import(KafkaProducerConfig.class)
+@Import(KafkaProducerTestConfig.class)
 @Slf4j
 public class KafkaProducer {
 
