@@ -90,6 +90,11 @@ parent:
     exist:
       id: -1
 
+service:
+  withdrawal:
+    url: http://fistful:8022/v1/
+    networkTimeout: 5000
+
 testcontainers:
   postgresql:
     tag: '11.4'

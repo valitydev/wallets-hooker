@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.withdrawal.StatusChange;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.swag.wallets.webhook.events.model.Event;
+import dev.vality.swag.wallets.webhook.events.model.Fee;
 import dev.vality.swag.wallets.webhook.events.model.WithdrawalFailed;
 import dev.vality.swag.wallets.webhook.events.model.WithdrawalSucceeded;
 import dev.vality.wallets.hooker.domain.WebHookModel;
@@ -14,6 +15,8 @@ import dev.vality.wallets.hooker.handler.AdditionalHeadersGenerator;
 import dev.vality.wallets.hooker.model.MessageGenParams;
 import dev.vality.wallets.hooker.service.BaseHookMessageGenerator;
 import dev.vality.wallets.hooker.service.WebHookMessageGeneratorServiceImpl;
+import dev.vality.wallets.hooker.service.WithdrawalClient;
+import dev.vality.wallets.hooker.utils.CashFlowUtils;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,16 +32,19 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
     private final WebHookMessageGeneratorServiceImpl<StatusChange> generatorService;
     private final ObjectMapper objectMapper;
     private final AdditionalHeadersGenerator additionalHeadersGenerator;
+    private final WithdrawalClient withdrawalClient;
 
     public WithdrawalStatusChangedHookMessageGenerator(
             WebHookMessageGeneratorServiceImpl<StatusChange> generatorService,
             ObjectMapper objectMapper,
             AdditionalHeadersGenerator additionalHeadersGenerator,
+            WithdrawalClient withdrawalClient,
             @Value("${parent.not.exist.id}") Long parentId) {
         super(parentId);
         this.generatorService = generatorService;
         this.objectMapper = objectMapper;
         this.additionalHeadersGenerator = additionalHeadersGenerator;
+        this.withdrawalClient = withdrawalClient;
     }
 
     @Override
@@ -97,9 +103,11 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             withdrawalFailed.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
             return objectMapper.writeValueAsString(withdrawalFailed);
         } else if (status.isSetSucceeded()) {
+            Fee fee = calculateFee(withdrawalId, eventId);
             WithdrawalSucceeded withdrawalSucceeded = new WithdrawalSucceeded()
                     .withdrawalID(withdrawalId)
-                    .externalID(externalId);
+                    .externalID(externalId)
+                    .fee(fee);
             withdrawalSucceeded.setEventType(Event.EventTypeEnum.WITHDRAWAL_SUCCEEDED);
             withdrawalSucceeded.setEventID(eventId.toString());
             withdrawalSucceeded.setOccuredAt(OffsetDateTime.parse(createdAt));
@@ -111,6 +119,26 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                     "Unknown WithdrawalStatus status: %s withdrawalId: %s",
                     status, withdrawalId);
             throw new GenerateMessageException(message);
+        }
+    }
+
+    private Fee calculateFee(String withdrawalId, Long eventId) {
+        try {
+            var withdrawalState = withdrawalClient.getWithdrawalInfo(withdrawalId, eventId);
+            if (withdrawalState != null 
+                    && withdrawalState.getEffectiveFinalCashFlow() != null
+                    && withdrawalState.getEffectiveFinalCashFlow().getPostings() != null) {
+                long amount = CashFlowUtils.getFistfulFee(withdrawalState.getEffectiveFinalCashFlow().getPostings());
+                String currency = withdrawalState.getBody().getCurrency().getSymbolicCode();
+                return new Fee().amount(amount).currency(currency);
+            }
+            log.warn("Unable to calculate fee for withdrawalId={}, eventId={}: missing cash flow data", 
+                    withdrawalId, eventId);
+            return null;
+        } catch (Exception e) {
+            log.warn("Error calculating fee for withdrawalId={}, eventId={}: {}", 
+                    withdrawalId, eventId, e.getMessage());
+            return null;
         }
     }
 
