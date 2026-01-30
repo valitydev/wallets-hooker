@@ -128,7 +128,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             if (withdrawalState != null 
                     && withdrawalState.getEffectiveFinalCashFlow() != null
                     && withdrawalState.getEffectiveFinalCashFlow().getPostings() != null) {
-                long amount = CashFlowUtils.getFistfulFee(withdrawalState.getEffectiveFinalCashFlow().getPostings());
+                long amount = CashFlowUtils.getWithdrawalFee(withdrawalState.getEffectiveFinalCashFlow().getPostings());
                 String currency = withdrawalState.getBody().getCurrency().getSymbolicCode();
                 return new Fee().amount(amount).currency(currency);
             }

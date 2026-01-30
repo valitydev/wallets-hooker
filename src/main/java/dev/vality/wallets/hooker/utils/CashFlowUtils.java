@@ -5,25 +5,20 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CashFlowUtils {
 
-    public static long getFistfulFee(List<FinalCashFlowPosting> postings) {
-        return getFistfulAmount(
-                postings,
-                posting -> posting.getSource().getAccountType().isSetWallet()
-                        && posting.getDestination().getAccountType().isSetSystem()
-        );
+    public static long getWithdrawalFee(List<FinalCashFlowPosting> postings) {
+        return getMerchantFee(postings);
     }
 
-    public static long getFistfulAmount(
-            List<dev.vality.fistful.cashflow.FinalCashFlowPosting> postings,
-            Predicate<FinalCashFlowPosting> filter
+    private static long getMerchantFee(
+            List<dev.vality.fistful.cashflow.FinalCashFlowPosting> postings
     ) {
         return postings.stream()
-                .filter(filter)
+                .filter(posting -> posting.getSource().getAccountType().isSetWallet()
+                        && posting.getDestination().getAccountType().isSetSystem())
                 .map(posting -> posting.getVolume().getAmount())
                 .reduce(0L, Long::sum);
     }
