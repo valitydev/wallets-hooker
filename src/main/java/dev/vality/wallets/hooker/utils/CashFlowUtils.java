@@ -10,12 +10,6 @@ import java.util.List;
 public class CashFlowUtils {
 
     public static long getWithdrawalFee(List<FinalCashFlowPosting> postings) {
-        return getMerchantFee(postings);
-    }
-
-    private static long getMerchantFee(
-            List<dev.vality.fistful.cashflow.FinalCashFlowPosting> postings
-    ) {
         return postings.stream()
                 .filter(posting -> posting.getSource().getAccountType().isSetWallet()
                         && posting.getDestination().getAccountType().isSetSystem())
