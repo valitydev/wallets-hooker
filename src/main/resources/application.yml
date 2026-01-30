@@ -90,8 +90,19 @@ parent:
     exist:
       id: -1
 
+service:
+  withdrawal:
+    url: http://fistful:8022/v1/
+    networkTimeout: 5000
+    retry:
+      maxAttempts: 10
+      initialIntervalMs: 1000
+      multiplier: 2.0
+      maxIntervalMs: 10000
+
 testcontainers:
   postgresql:
     tag: '11.4'
   kafka:
-    tag: '6.2.0'
+    confluent:
+      tag: '7.8.0'

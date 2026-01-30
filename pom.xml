@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>3.1.7</version>
+        <version>3.1.9</version>
     </parent>
 
     <artifactId>wallets-hooker</artifactId>
@@ -133,7 +133,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events-server</artifactId>
-            <version>1.41-1174f82</version>
+            <version>1.42-d30b8f0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -184,7 +184,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>testcontainers-annotations</artifactId>
-            <version>3.0.2</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
