@@ -2,11 +2,18 @@ package dev.vality.wallets.hooker.handler;
 
 import dev.vality.fistful.account.Account;
 import dev.vality.fistful.base.*;
+import dev.vality.fistful.cashflow.CashFlowAccount;
+import dev.vality.fistful.cashflow.FinalCashFlow;
+import dev.vality.fistful.cashflow.FinalCashFlowAccount;
+import dev.vality.fistful.cashflow.FinalCashFlowPosting;
+import dev.vality.fistful.cashflow.SystemCashFlowAccount;
+import dev.vality.fistful.cashflow.WalletCashFlowAccount;
 import dev.vality.fistful.destination.Destination;
 import dev.vality.fistful.destination.TimestampedChange;
 import dev.vality.fistful.withdrawal.CreatedChange;
 import dev.vality.fistful.withdrawal.StatusChange;
 import dev.vality.fistful.withdrawal.Withdrawal;
+import dev.vality.fistful.withdrawal.WithdrawalState;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.fistful.withdrawal.status.Succeeded;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
@@ -17,6 +24,7 @@ import dev.vality.wallets.hooker.domain.enums.EventType;
 import org.apache.thrift.TBase;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public class TestBeanFactory {
 
@@ -112,6 +120,10 @@ public class TestBeanFactory {
     }
 
     public static MachineEvent createWithdrawalSucceeded() {
+        return createWithdrawalSucceeded(67L);
+    }
+
+    public static MachineEvent createWithdrawalSucceeded(Long eventId) {
         dev.vality.fistful.withdrawal.Change change = new dev.vality.fistful.withdrawal.Change();
         change.setStatusChanged(new StatusChange().setStatus(Status.succeeded(new Succeeded())));
 
@@ -122,9 +134,28 @@ public class TestBeanFactory {
 
         return machineEvent(
                 WITHDRAWAL_ID,
-                67L,
+                eventId,
                 new ThriftSerializer<>(),
                 timestampedChange);
+    }
+
+    public static WithdrawalState createWithdrawalState() {
+        return new WithdrawalState()
+                .setId(WITHDRAWAL_ID)
+                .setDestinationId(DESTINATION)
+                .setExternalId("extId")
+                .setWalletId(SOURCE_WALLET_ID)
+                .setPartyId(PARTY_ID)
+                .setCreatedAt("2025-03-22T06:12:27Z")
+                .setDomainRevision(1L)
+                .setBody(createCash(1000));
+    }
+
+    public static WithdrawalState createWithdrawalStateWithNewBody() {
+        return createWithdrawalState()
+                .setNewBody(createCash(1500, "USD"))
+                .setEffectiveFinalCashFlow(new FinalCashFlow()
+                        .setPostings(List.of(createFeePosting())));
     }
 
     public static WebHookModel createWebhookModel() {
@@ -152,5 +183,27 @@ public class TestBeanFactory {
                 .setSourceNs("source_ns")
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setData(Value.bin(depositChangeSerializer.serialize("", change)));
+    }
+
+    private static Cash createCash(long amount) {
+        return createCash(amount, "RUB");
+    }
+
+    private static Cash createCash(long amount, String currencyCode) {
+        Cash body = new Cash();
+        body.setAmount(amount);
+        CurrencyRef currency = new CurrencyRef();
+        currency.setSymbolicCode(currencyCode);
+        body.setCurrency(currency);
+        return body;
+    }
+
+    private static FinalCashFlowPosting createFeePosting() {
+        return new FinalCashFlowPosting()
+                .setSource(new FinalCashFlowAccount()
+                        .setAccountType(CashFlowAccount.wallet(WalletCashFlowAccount.sender_source)))
+                .setDestination(new FinalCashFlowAccount()
+                        .setAccountType(CashFlowAccount.system(SystemCashFlowAccount.settlement)))
+                .setVolume(createCash(25));
     }
 }

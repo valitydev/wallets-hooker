@@ -2,10 +2,13 @@ package dev.vality.wallets.hooker.handler.withdrawal.generator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.vality.fistful.base.Cash;
+import dev.vality.fistful.withdrawal.WithdrawalState;
 import dev.vality.fistful.withdrawal.StatusChange;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.swag.wallets.webhook.events.model.Event;
 import dev.vality.swag.wallets.webhook.events.model.Fee;
+import dev.vality.swag.wallets.webhook.events.model.WithdrawalBody;
 import dev.vality.swag.wallets.webhook.events.model.WithdrawalFailed;
 import dev.vality.swag.wallets.webhook.events.model.WithdrawalSucceeded;
 import dev.vality.wallets.hooker.domain.WebHookModel;
@@ -103,11 +106,13 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             withdrawalFailed.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
             return objectMapper.writeValueAsString(withdrawalFailed);
         } else if (status.isSetSucceeded()) {
-            Fee fee = calculateFee(withdrawalId, eventId);
+            WithdrawalState withdrawalState = getWithdrawalState(withdrawalId, eventId);
+            Fee fee = calculateFee(withdrawalId, eventId, withdrawalState);
             WithdrawalSucceeded withdrawalSucceeded = new WithdrawalSucceeded()
                     .withdrawalID(withdrawalId)
                     .externalID(externalId)
-                    .fee(fee);
+                    .fee(fee)
+                    .body(initNewBody(withdrawalState));
             withdrawalSucceeded.setEventType(Event.EventTypeEnum.WITHDRAWAL_SUCCEEDED);
             withdrawalSucceeded.setEventID(eventId.toString());
             withdrawalSucceeded.setOccuredAt(OffsetDateTime.parse(createdAt));
@@ -122,24 +127,46 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         }
     }
 
-    private Fee calculateFee(String withdrawalId, Long eventId) {
+    private WithdrawalState getWithdrawalState(String withdrawalId, Long eventId) {
         try {
-            var withdrawalState = withdrawalClient.getWithdrawalInfo(withdrawalId, eventId);
-            if (withdrawalState != null 
-                    && withdrawalState.getEffectiveFinalCashFlow() != null
-                    && withdrawalState.getEffectiveFinalCashFlow().getPostings() != null) {
-                long amount = CashFlowUtils.getWithdrawalFee(withdrawalState.getEffectiveFinalCashFlow().getPostings());
-                String currency = withdrawalState.getBody().getCurrency().getSymbolicCode();
-                return new Fee().amount(amount).currency(currency);
-            }
-            log.warn("Unable to calculate fee for withdrawalId={}, eventId={}: missing cash flow data", 
-                    withdrawalId, eventId);
-            return null;
+            return withdrawalClient.getWithdrawalInfo(withdrawalId, eventId);
         } catch (Exception e) {
-            log.warn("Error calculating fee for withdrawalId={}, eventId={}: {}", 
+            log.warn("Error getting withdrawal state for withdrawalId={}, eventId={}: {}",
                     withdrawalId, eventId, e.getMessage());
             return null;
         }
+    }
+
+    private Fee calculateFee(String withdrawalId, Long eventId, WithdrawalState withdrawalState) {
+        if (withdrawalState != null
+                && withdrawalState.getEffectiveFinalCashFlow() != null
+                && withdrawalState.getEffectiveFinalCashFlow().getPostings() != null) {
+            long amount = CashFlowUtils.getWithdrawalFee(withdrawalState.getEffectiveFinalCashFlow().getPostings());
+            String currency = withdrawalState.getBody().getCurrency().getSymbolicCode();
+            return new Fee().amount(amount).currency(currency);
+        }
+        log.warn("Unable to calculate fee for withdrawalId={}, eventId={}: missing cash flow data",
+                withdrawalId, eventId);
+        return null;
+    }
+
+    private WithdrawalBody initNewBody(WithdrawalState withdrawalState) {
+        if (!amountChanged(withdrawalState)) {
+            return null;
+        }
+        return initBody(withdrawalState.getNewBody());
+    }
+
+    private boolean amountChanged(WithdrawalState withdrawalState) {
+        return withdrawalState != null
+                && withdrawalState.isSetNewBody();
+    }
+
+    private WithdrawalBody initBody(Cash body) {
+        var withdrawalBody = new WithdrawalBody();
+        withdrawalBody.setAmount(body.getAmount());
+        withdrawalBody.setCurrency(body.getCurrency().getSymbolicCode());
+        return withdrawalBody;
     }
 
 }
