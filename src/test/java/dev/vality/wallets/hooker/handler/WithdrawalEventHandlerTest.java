@@ -1,14 +1,17 @@
 package dev.vality.wallets.hooker.handler;
 
+import dev.vality.fistful.withdrawal.ManagementSrv;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.wallets.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.service.WebHookMessageSenderService;
 import dev.vality.wallets.hooker.service.WithdrawalClient;
-import dev.vality.fistful.withdrawal.ManagementSrv;
 import dev.vality.wallets.hooker.service.kafka.WithdrawalEventService;
+import dev.vality.webhook.dispatcher.WebhookMessage;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -16,8 +19,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @PostgresqlSpringBootITest
 class WithdrawalEventHandlerTest {
@@ -40,6 +46,8 @@ class WithdrawalEventHandlerTest {
     @Test
     void handleWithdrawalCreatedAndAndStatusChange() throws InterruptedException {
         WebHookModel webhook = TestBeanFactory.createWebhookModel();
+        when(withdrawalClient.getWithdrawalInfo(eq(TestBeanFactory.WITHDRAWAL_ID), anyLong()))
+                .thenReturn(TestBeanFactory.createWithdrawalState());
 
         webHookDao.create(webhook);
 
@@ -55,5 +63,27 @@ class WithdrawalEventHandlerTest {
                 .send(any());
 
         latch.await();
+    }
+
+    @Test
+    void handleWithdrawalSucceededWithNewBodyInSucceededWebhook() {
+        WebHookModel webhook = TestBeanFactory.createWebhookModel();
+        when(withdrawalClient.getWithdrawalInfo(TestBeanFactory.WITHDRAWAL_ID, 68L))
+                .thenReturn(TestBeanFactory.createWithdrawalStateWithNewBody());
+
+        webHookDao.create(webhook);
+
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalEvent()));
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalSucceeded(68L)));
+
+        ArgumentCaptor<WebhookMessage> captor = ArgumentCaptor.forClass(WebhookMessage.class);
+        verify(webHookMessageSenderService, timeout(1000L).times(2))
+                .send(captor.capture());
+        Assertions.assertTrue(captor.getAllValues().stream()
+                .map(WebhookMessage::getRequestBody)
+                .map(String::new)
+                .anyMatch(body -> body.contains("\"eventType\":\"WithdrawalSucceeded\"")
+                        && body.contains("\"body\":{\"amount\":1500,\"currency\":\"USD\"}")
+                        && body.contains("\"fee\":{\"amount\":25,\"currency\":\"RUB\"}")));
     }
 }

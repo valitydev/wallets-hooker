@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>3.1.9</version>
+        <version>3.1.11</version>
     </parent>
 
     <artifactId>wallets-hooker</artifactId>
@@ -124,16 +124,17 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
+            <version>1.698-99c91c9</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>fistful-proto</artifactId>
-            <version>1.180-8b04c7f</version>
+            <version>1.191-94b75ce</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-wallets-webhook-events-server</artifactId>
-            <version>1.42-d30b8f0</version>
+            <version>1.43-1b943c0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
