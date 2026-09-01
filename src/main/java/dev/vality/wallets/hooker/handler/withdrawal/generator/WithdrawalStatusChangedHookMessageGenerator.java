@@ -154,7 +154,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         if (!amountChanged(withdrawalState)) {
             return null;
         }
-        return initBody(withdrawalState.getNewBody());
+        return initBody(withdrawalState.getNewBody(), withdrawalState.getBody());
     }
 
     private boolean amountChanged(WithdrawalState withdrawalState) {
@@ -162,10 +162,11 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                 && withdrawalState.isSetNewBody();
     }
 
-    private WithdrawalBody initBody(Cash body) {
+    private WithdrawalBody initBody(Cash newBody, Cash oldBody) {
         var withdrawalBody = new WithdrawalBody();
-        withdrawalBody.setAmount(body.getAmount());
-        withdrawalBody.setCurrency(body.getCurrency().getSymbolicCode());
+        withdrawalBody.setAmount(oldBody.getAmount());
+        withdrawalBody.setChangedAmount(newBody.getAmount());
+        withdrawalBody.setCurrency(newBody.getCurrency().getSymbolicCode());
         return withdrawalBody;
     }
 

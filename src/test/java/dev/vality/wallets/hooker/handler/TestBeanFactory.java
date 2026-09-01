@@ -10,10 +10,7 @@ import dev.vality.fistful.cashflow.SystemCashFlowAccount;
 import dev.vality.fistful.cashflow.WalletCashFlowAccount;
 import dev.vality.fistful.destination.Destination;
 import dev.vality.fistful.destination.TimestampedChange;
-import dev.vality.fistful.withdrawal.CreatedChange;
-import dev.vality.fistful.withdrawal.StatusChange;
-import dev.vality.fistful.withdrawal.Withdrawal;
-import dev.vality.fistful.withdrawal.WithdrawalState;
+import dev.vality.fistful.withdrawal.*;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.fistful.withdrawal.status.Succeeded;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
@@ -139,6 +136,24 @@ public class TestBeanFactory {
                 timestampedChange);
     }
 
+    public static MachineEvent createWithdrawalCashChanged(Long eventId) {
+        dev.vality.fistful.withdrawal.Change change = new dev.vality.fistful.withdrawal.Change();
+        change.setBodyChanged(new BodyChange()
+                .setOldBody(createCash(1000, "USD"))
+                .setNewBody(createCash(1500, "USD")));
+
+        dev.vality.fistful.withdrawal.TimestampedChange timestampedChange =
+                new dev.vality.fistful.withdrawal.TimestampedChange()
+                        .setOccuredAt("2016-03-22T06:12:27Z")
+                        .setChange(change);
+
+        return machineEvent(
+                WITHDRAWAL_ID,
+                eventId,
+                new ThriftSerializer<>(),
+                timestampedChange);
+    }
+
     public static WithdrawalState createWithdrawalState() {
         return new WithdrawalState()
                 .setId(WITHDRAWAL_ID)
@@ -162,6 +177,7 @@ public class TestBeanFactory {
         LinkedHashSet<EventType> eventTypes = new LinkedHashSet<>();
         eventTypes.add(EventType.WITHDRAWAL_CREATED);
         eventTypes.add(EventType.WITHDRAWAL_SUCCEEDED);
+        eventTypes.add(EventType.WITHDRAWAL_CASH_CHANGED);
         return WebHookModel.builder()
                 .enabled(true)
                 .partyId(TestBeanFactory.PARTY_ID)

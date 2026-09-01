@@ -18,12 +18,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @PostgresqlSpringBootITest
 class WithdrawalEventHandlerTest {
@@ -83,7 +79,29 @@ class WithdrawalEventHandlerTest {
                 .map(WebhookMessage::getRequestBody)
                 .map(String::new)
                 .anyMatch(body -> body.contains("\"eventType\":\"WithdrawalSucceeded\"")
-                        && body.contains("\"body\":{\"amount\":1500,\"currency\":\"USD\"}")
+                        && body.contains("\"body\":{\"amount\":1000,\"changedAmount\":1500,\"currency\":\"USD\"}")
                         && body.contains("\"fee\":{\"amount\":25,\"currency\":\"RUB\"}")));
+    }
+
+    @Test
+    void handleWithdrawalCashChangedInSucceededWebhook() {
+        WebHookModel webhook = TestBeanFactory.createWebhookModel();
+        when(withdrawalClient.getWithdrawalInfo(eq(TestBeanFactory.WITHDRAWAL_ID), anyLong()))
+                .thenReturn(TestBeanFactory.createWithdrawalState());
+
+        webHookDao.create(webhook);
+
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalEvent()));
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalSucceeded(69L)));
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalCashChanged(70L)));
+
+        ArgumentCaptor<WebhookMessage> captor = ArgumentCaptor.forClass(WebhookMessage.class);
+        verify(webHookMessageSenderService, timeout(1000L).times(3))
+                .send(captor.capture());
+        Assertions.assertTrue(captor.getAllValues().stream()
+                .map(WebhookMessage::getRequestBody)
+                .map(String::new)
+                .anyMatch(body -> body.contains("\"eventType\":\"WithdrawalCashChanged\"")
+                        && body.contains("\"body\":{\"amount\":1000,\"changedAmount\":1500,\"currency\":\"USD\"}")));
     }
 }
