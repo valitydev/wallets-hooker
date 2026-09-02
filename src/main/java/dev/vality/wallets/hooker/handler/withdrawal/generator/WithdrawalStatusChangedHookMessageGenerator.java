@@ -59,7 +59,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                     messageGenParams.getWithdrawalState());
 
             WebhookMessage webhookMessage = generatorService.generate(event, model, messageGenParams);
-            webhookMessage.setParentEventId(initPatenId(model, messageGenParams.getParentId()));
+            webhookMessage.setParentEventId(initParenId(model, messageGenParams.getParentId()));
             webhookMessage.setRequestBody(message.getBytes());
             webhookMessage.setAdditionalHeaders(additionalHeadersGenerator.generate(model, message));
 
@@ -77,7 +77,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
 
     }
 
-    private Long initPatenId(WebHookModel model, Long parentId) {
+    private Long initParenId(WebHookModel model, Long parentId) {
         if (model.getEventTypes() != null && model.getEventTypes().contains(EventType.WITHDRAWAL_CREATED)) {
             return parentId;
         }
