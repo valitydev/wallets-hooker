@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class WithdrawalFailedHandler implements WithdrawalEventHandler {
 
     private final WithdrawalChangeStatusHandler withdrawalChangeStatusHandler;
-    private final WithdrawalClient withdrawalClient;
 
 
     @Override
@@ -28,7 +27,6 @@ public class WithdrawalFailedHandler implements WithdrawalEventHandler {
     @Override
     public void handle(TimestampedChange change, MachineEvent event) {
         String withdrawalId = event.getSourceId();
-        WithdrawalState withdrawalState = getWithdrawalState(withdrawalId, event.getEventId());
         log.info("Start handling WithdrawalFailedChange: withdrawalId={} change={}", withdrawalId, change);
 
         withdrawalChangeStatusHandler.handleChangeStatus(
@@ -36,18 +34,9 @@ public class WithdrawalFailedHandler implements WithdrawalEventHandler {
                 event,
                 withdrawalId,
                 EventType.WITHDRAWAL_FAILED,
-                withdrawalState);
+                null);
 
         log.info("Finish handling WithdrawalFailedChange: withdrawalId={}", withdrawalId);
     }
 
-    private WithdrawalState getWithdrawalState(String withdrawalId, Long eventId) {
-        try {
-            return withdrawalClient.getWithdrawalInfo(withdrawalId, eventId);
-        } catch (Exception e) {
-            log.warn("Error getting withdrawal state for withdrawalId={}, eventId={}: {}",
-                    withdrawalId, eventId, e.getMessage());
-            return null;
-        }
-    }
 }
