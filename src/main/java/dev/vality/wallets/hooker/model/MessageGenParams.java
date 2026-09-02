@@ -1,5 +1,6 @@
 package dev.vality.wallets.hooker.model;
 
+import dev.vality.fistful.withdrawal.WithdrawalState;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,5 +17,7 @@ public class MessageGenParams {
     private String createdAt;
 
     private String externalId;
+
+    private WithdrawalState withdrawalState;
 
 }

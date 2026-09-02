@@ -2,12 +2,7 @@ package dev.vality.wallets.hooker.handler;
 
 import dev.vality.fistful.account.Account;
 import dev.vality.fistful.base.*;
-import dev.vality.fistful.cashflow.CashFlowAccount;
-import dev.vality.fistful.cashflow.FinalCashFlow;
-import dev.vality.fistful.cashflow.FinalCashFlowAccount;
-import dev.vality.fistful.cashflow.FinalCashFlowPosting;
-import dev.vality.fistful.cashflow.SystemCashFlowAccount;
-import dev.vality.fistful.cashflow.WalletCashFlowAccount;
+import dev.vality.fistful.cashflow.*;
 import dev.vality.fistful.destination.Destination;
 import dev.vality.fistful.destination.TimestampedChange;
 import dev.vality.fistful.withdrawal.*;
@@ -136,11 +131,17 @@ public class TestBeanFactory {
                 timestampedChange);
     }
 
-    public static MachineEvent createWithdrawalCashChanged(Long eventId) {
+    public static MachineEvent createWithdrawalAdjustmentChange(Long eventId) {
         dev.vality.fistful.withdrawal.Change change = new dev.vality.fistful.withdrawal.Change();
-        change.setBodyChanged(new BodyChange()
-                .setOldBody(createCash(1000, "USD"))
-                .setNewBody(createCash(1500, "USD")));
+        var adjustment = new AdjustmentChange();
+        var payload = new dev.vality.fistful.withdrawal.adjustment.Change();
+        var status = new dev.vality.fistful.withdrawal.adjustment.StatusChange(
+                dev.vality.fistful.withdrawal.adjustment.Status.succeeded(
+                        new dev.vality.fistful.withdrawal.adjustment.Succeeded()));
+        payload.setStatusChanged(status);
+        adjustment.setId("1");
+        adjustment.setPayload(payload);
+        change.setAdjustment(adjustment);
 
         dev.vality.fistful.withdrawal.TimestampedChange timestampedChange =
                 new dev.vality.fistful.withdrawal.TimestampedChange()
@@ -168,6 +169,7 @@ public class TestBeanFactory {
 
     public static WithdrawalState createWithdrawalStateWithNewBody() {
         return createWithdrawalState()
+                .setStatus(Status.succeeded(new Succeeded()))
                 .setNewBody(createCash(1500, "USD"))
                 .setEffectiveFinalCashFlow(new FinalCashFlow()
                         .setPostings(List.of(createFeePosting())));
@@ -177,7 +179,6 @@ public class TestBeanFactory {
         LinkedHashSet<EventType> eventTypes = new LinkedHashSet<>();
         eventTypes.add(EventType.WITHDRAWAL_CREATED);
         eventTypes.add(EventType.WITHDRAWAL_SUCCEEDED);
-        eventTypes.add(EventType.WITHDRAWAL_CASH_CHANGED);
         return WebHookModel.builder()
                 .enabled(true)
                 .partyId(TestBeanFactory.PARTY_ID)

@@ -84,16 +84,16 @@ class WithdrawalEventHandlerTest {
     }
 
     @Test
-    void handleWithdrawalCashChangedInSucceededWebhook() {
+    void handleWithdrawalAdjustmentSucceededWebhook() {
         WebHookModel webhook = TestBeanFactory.createWebhookModel();
         when(withdrawalClient.getWithdrawalInfo(eq(TestBeanFactory.WITHDRAWAL_ID), anyLong()))
-                .thenReturn(TestBeanFactory.createWithdrawalState());
+                .thenReturn(TestBeanFactory.createWithdrawalStateWithNewBody());
 
         webHookDao.create(webhook);
 
         withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalEvent()));
         withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalSucceeded(69L)));
-        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalCashChanged(70L)));
+        withdrawalEventService.handleEvents(List.of(TestBeanFactory.createWithdrawalAdjustmentChange(70L)));
 
         ArgumentCaptor<WebhookMessage> captor = ArgumentCaptor.forClass(WebhookMessage.class);
         verify(webHookMessageSenderService, timeout(1000L).times(3))
@@ -101,7 +101,7 @@ class WithdrawalEventHandlerTest {
         Assertions.assertTrue(captor.getAllValues().stream()
                 .map(WebhookMessage::getRequestBody)
                 .map(String::new)
-                .anyMatch(body -> body.contains("\"eventType\":\"WithdrawalCashChanged\"")
+                .anyMatch(body -> body.contains("\"eventType\":\"WithdrawalSucceeded\"")
                         && body.contains("\"body\":{\"amount\":1000,\"changedAmount\":1500,\"currency\":\"USD\"}")));
     }
 }
