@@ -132,15 +132,15 @@ public class TestBeanFactory {
     }
 
     public static MachineEvent createWithdrawalAdjustmentChange(Long eventId) {
-        dev.vality.fistful.withdrawal.Change change = new dev.vality.fistful.withdrawal.Change();
-        var adjustment = new AdjustmentChange();
-        var payload = new dev.vality.fistful.withdrawal.adjustment.Change();
         var status = new dev.vality.fistful.withdrawal.adjustment.StatusChange(
                 dev.vality.fistful.withdrawal.adjustment.Status.succeeded(
                         new dev.vality.fistful.withdrawal.adjustment.Succeeded()));
+        var payload = new dev.vality.fistful.withdrawal.adjustment.Change();
         payload.setStatusChanged(status);
+        var adjustment = new AdjustmentChange();
         adjustment.setId("1");
         adjustment.setPayload(payload);
+        dev.vality.fistful.withdrawal.Change change = new dev.vality.fistful.withdrawal.Change();
         change.setAdjustment(adjustment);
 
         dev.vality.fistful.withdrawal.TimestampedChange timestampedChange =
