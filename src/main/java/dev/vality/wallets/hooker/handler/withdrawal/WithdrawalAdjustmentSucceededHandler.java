@@ -32,16 +32,14 @@ public class WithdrawalAdjustmentSucceededHandler implements WithdrawalEventHand
         WithdrawalState withdrawalState = getWithdrawalState(withdrawalId, event.getEventId());
         if (withdrawalState != null
                 && withdrawalState.getStatus() != null
-                && !withdrawalState.getStatus().isSetPending()) {
+                && withdrawalState.getStatus().isSetSucceeded()) {
             log.info("Start handling WithdrawalAdjustmentChange: withdrawalId={} change={}", withdrawalId, change);
 
             withdrawalChangeStatusHandler.handleChangeStatus(
                     change,
                     event,
                     withdrawalId,
-                    withdrawalState.getStatus().isSetSucceeded()
-                            ? EventType.WITHDRAWAL_SUCCEEDED
-                            : EventType.WITHDRAWAL_FAILED,
+                    EventType.WITHDRAWAL_SUCCEEDED,
                     withdrawalState);
 
             log.info("Finish handling WithdrawalAdjustmentChange: withdrawalId={}", withdrawalId);
