@@ -1,7 +1,7 @@
 package dev.vality.wallets.hooker.handler.withdrawal;
 
-import dev.vality.fistful.withdrawal.StatusChange;
 import dev.vality.fistful.withdrawal.TimestampedChange;
+import dev.vality.fistful.withdrawal.WithdrawalState;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.wallets.hooker.dao.webhook.WebHookDao;
 import dev.vality.wallets.hooker.dao.withdrawal.WithdrawalReferenceDao;
@@ -35,7 +35,8 @@ public class WithdrawalChangeStatusHandler {
             TimestampedChange change,
             MachineEvent event,
             String withdrawalId,
-            EventType eventType) {
+            EventType eventType,
+            WithdrawalState withdrawalState) {
         try {
             var reference = waitReferenceWithdrawal(withdrawalId);
             Long parentId = Long.valueOf(reference.getEventId());
@@ -44,13 +45,14 @@ public class WithdrawalChangeStatusHandler {
                     .filter(webHook -> webHook.getWalletId() == null
                             || webHook.getWalletId().equals(reference.getWalletId()))
                     .map(webhook -> generateWithdrawalStatusChangeHookMsg(
-                            change.getChange().getStatusChanged(),
+                            change,
                             webhook,
                             withdrawalId,
                             event.getEventId(),
                             parentId,
                             event.getCreatedAt(),
-                            reference.getExternalId()))
+                            reference.getExternalId(),
+                            withdrawalState))
                     .forEach(webHookMessageSenderService::send);
         } catch (Exception e) {
             log.error("Error while handling WithdrawalStatusChangedChange: {}, withdrawalId: {}",
@@ -76,22 +78,24 @@ public class WithdrawalChangeStatusHandler {
     }
 
     private WebhookMessage generateWithdrawalStatusChangeHookMsg(
-            StatusChange statusChanged,
+            TimestampedChange change,
             WebHookModel webhook,
             String withdrawalId,
             long eventId,
             Long parentId,
             String createdAt,
-            String externalId) {
+            String externalId,
+            WithdrawalState withdrawalState) {
         MessageGenParams messageGenParams = MessageGenParams.builder()
                 .sourceId(withdrawalId)
                 .eventId(eventId)
                 .parentId(parentId)
                 .createdAt(createdAt)
                 .externalId(externalId)
+                .withdrawalState(withdrawalState)
                 .build();
 
-        return withdrawalStatusChangedHookMessageGenerator.generate(statusChanged, webhook, messageGenParams);
+        return withdrawalStatusChangedHookMessageGenerator.generate(change, webhook, messageGenParams);
     }
 
 }

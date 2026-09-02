@@ -12,33 +12,38 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WithdrawalSucceededHandler implements WithdrawalEventHandler {
+public class WithdrawalAdjustmentSucceededHandler implements WithdrawalEventHandler {
 
     private final WithdrawalChangeStatusHandler withdrawalChangeStatusHandler;
     private final WithdrawalClient withdrawalClient;
 
     @Override
     public boolean accept(TimestampedChange change) {
-        return change.getChange().isSetStatusChanged()
-                && change.getChange().getStatusChanged().isSetStatus()
-                && change.getChange().getStatusChanged().getStatus().isSetSucceeded();
+        return change.getChange().isSetAdjustment()
+                && change.getChange().getAdjustment().isSetPayload()
+                && change.getChange().getAdjustment().getPayload().isSetStatusChanged()
+                && change.getChange().getAdjustment().getPayload().getStatusChanged().isSetStatus()
+                && change.getChange().getAdjustment().getPayload().getStatusChanged().getStatus().isSetSucceeded();
     }
 
     @Override
     public void handle(TimestampedChange change, MachineEvent event) {
         String withdrawalId = event.getSourceId();
         WithdrawalState withdrawalState = getWithdrawalState(withdrawalId, event.getEventId());
+        if (withdrawalState != null
+                && withdrawalState.getStatus() != null
+                && withdrawalState.getStatus().isSetSucceeded()) {
+            log.info("Start handling WithdrawalAdjustmentChange: withdrawalId={} change={}", withdrawalId, change);
 
-        log.info("Start handling WithdrawalSucceededChange: withdrawalId={} change={}", withdrawalId, change);
+            withdrawalChangeStatusHandler.handleChangeStatus(
+                    change,
+                    event,
+                    withdrawalId,
+                    EventType.WITHDRAWAL_SUCCEEDED,
+                    withdrawalState);
 
-        withdrawalChangeStatusHandler.handleChangeStatus(
-                change,
-                event,
-                withdrawalId,
-                EventType.WITHDRAWAL_SUCCEEDED,
-                withdrawalState);
-
-        log.info("Finish handling WithdrawalSucceededChange: withdrawalId={}", withdrawalId);
+            log.info("Finish handling WithdrawalAdjustmentChange: withdrawalId={}", withdrawalId);
+        }
     }
 
     private WithdrawalState getWithdrawalState(String withdrawalId, Long eventId) {

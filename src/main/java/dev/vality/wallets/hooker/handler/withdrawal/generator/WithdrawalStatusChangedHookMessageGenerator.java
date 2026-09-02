@@ -3,14 +3,10 @@ package dev.vality.wallets.hooker.handler.withdrawal.generator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.base.Cash;
+import dev.vality.fistful.withdrawal.TimestampedChange;
 import dev.vality.fistful.withdrawal.WithdrawalState;
-import dev.vality.fistful.withdrawal.StatusChange;
 import dev.vality.fistful.withdrawal.status.Status;
-import dev.vality.swag.wallets.webhook.events.model.Event;
-import dev.vality.swag.wallets.webhook.events.model.Fee;
-import dev.vality.swag.wallets.webhook.events.model.WithdrawalBody;
-import dev.vality.swag.wallets.webhook.events.model.WithdrawalFailed;
-import dev.vality.swag.wallets.webhook.events.model.WithdrawalSucceeded;
+import dev.vality.swag.wallets.webhook.events.model.*;
 import dev.vality.wallets.hooker.domain.WebHookModel;
 import dev.vality.wallets.hooker.domain.enums.EventType;
 import dev.vality.wallets.hooker.exception.GenerateMessageException;
@@ -18,7 +14,6 @@ import dev.vality.wallets.hooker.handler.AdditionalHeadersGenerator;
 import dev.vality.wallets.hooker.model.MessageGenParams;
 import dev.vality.wallets.hooker.service.BaseHookMessageGenerator;
 import dev.vality.wallets.hooker.service.WebHookMessageGeneratorServiceImpl;
-import dev.vality.wallets.hooker.service.WithdrawalClient;
 import dev.vality.wallets.hooker.utils.CashFlowUtils;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -30,41 +25,41 @@ import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Component
-public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessageGenerator<StatusChange> {
+public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessageGenerator<TimestampedChange> {
 
-    private final WebHookMessageGeneratorServiceImpl<StatusChange> generatorService;
+    private final WebHookMessageGeneratorServiceImpl<TimestampedChange> generatorService;
     private final ObjectMapper objectMapper;
     private final AdditionalHeadersGenerator additionalHeadersGenerator;
-    private final WithdrawalClient withdrawalClient;
 
     public WithdrawalStatusChangedHookMessageGenerator(
-            WebHookMessageGeneratorServiceImpl<StatusChange> generatorService,
+            WebHookMessageGeneratorServiceImpl<TimestampedChange> generatorService,
             ObjectMapper objectMapper,
             AdditionalHeadersGenerator additionalHeadersGenerator,
-            WithdrawalClient withdrawalClient,
             @Value("${parent.not.exist.id}") Long parentId) {
         super(parentId);
         this.generatorService = generatorService;
         this.objectMapper = objectMapper;
         this.additionalHeadersGenerator = additionalHeadersGenerator;
-        this.withdrawalClient = withdrawalClient;
     }
 
     @Override
     protected WebhookMessage generateMessage(
-            StatusChange event,
+            TimestampedChange event,
             WebHookModel model,
             MessageGenParams messageGenParams) {
         try {
             String message = initRequestBody(
-                    event.getStatus(),
+                    event.getChange().isSetStatusChanged()
+                            ? event.getChange().getStatusChanged().getStatus()
+                            : messageGenParams.getWithdrawalState().getStatus(),
                     messageGenParams.getSourceId(),
                     messageGenParams.getEventId(),
                     messageGenParams.getCreatedAt(),
-                    messageGenParams.getExternalId());
+                    messageGenParams.getExternalId(),
+                    messageGenParams.getWithdrawalState());
 
             WebhookMessage webhookMessage = generatorService.generate(event, model, messageGenParams);
-            webhookMessage.setParentEventId(initPatenId(model, messageGenParams.getParentId()));
+            webhookMessage.setParentEventId(initParenId(model, messageGenParams.getParentId()));
             webhookMessage.setRequestBody(message.getBytes());
             webhookMessage.setAdditionalHeaders(additionalHeadersGenerator.generate(model, message));
 
@@ -82,7 +77,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
 
     }
 
-    private Long initPatenId(WebHookModel model, Long parentId) {
+    private Long initParenId(WebHookModel model, Long parentId) {
         if (model.getEventTypes() != null && model.getEventTypes().contains(EventType.WITHDRAWAL_CREATED)) {
             return parentId;
         }
@@ -95,7 +90,8 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             String withdrawalId,
             Long eventId,
             String createdAt,
-            String externalId) throws JsonProcessingException {
+            String externalId,
+            WithdrawalState withdrawalState) throws JsonProcessingException {
         if (status.isSetFailed()) {
             WithdrawalFailed withdrawalFailed = new WithdrawalFailed()
                     .withdrawalID(withdrawalId)
@@ -106,7 +102,6 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             withdrawalFailed.setTopic(Event.TopicEnum.WITHDRAWAL_TOPIC);
             return objectMapper.writeValueAsString(withdrawalFailed);
         } else if (status.isSetSucceeded()) {
-            WithdrawalState withdrawalState = getWithdrawalState(withdrawalId, eventId);
             Fee fee = calculateFee(withdrawalId, eventId, withdrawalState);
             WithdrawalSucceeded withdrawalSucceeded = new WithdrawalSucceeded()
                     .withdrawalID(withdrawalId)
@@ -127,16 +122,6 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         }
     }
 
-    private WithdrawalState getWithdrawalState(String withdrawalId, Long eventId) {
-        try {
-            return withdrawalClient.getWithdrawalInfo(withdrawalId, eventId);
-        } catch (Exception e) {
-            log.warn("Error getting withdrawal state for withdrawalId={}, eventId={}: {}",
-                    withdrawalId, eventId, e.getMessage());
-            return null;
-        }
-    }
-
     private Fee calculateFee(String withdrawalId, Long eventId, WithdrawalState withdrawalState) {
         if (withdrawalState != null
                 && withdrawalState.getEffectiveFinalCashFlow() != null
@@ -154,7 +139,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         if (!amountChanged(withdrawalState)) {
             return null;
         }
-        return initBody(withdrawalState.getNewBody());
+        return initBody(withdrawalState.getNewBody(), withdrawalState.getBody());
     }
 
     private boolean amountChanged(WithdrawalState withdrawalState) {
@@ -162,10 +147,11 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                 && withdrawalState.isSetNewBody();
     }
 
-    private WithdrawalBody initBody(Cash body) {
+    private WithdrawalBody initBody(Cash newBody, Cash oldBody) {
         var withdrawalBody = new WithdrawalBody();
-        withdrawalBody.setAmount(body.getAmount());
-        withdrawalBody.setCurrency(body.getCurrency().getSymbolicCode());
+        withdrawalBody.setAmount(oldBody.getAmount());
+        withdrawalBody.setChangedAmount(newBody.getAmount());
+        withdrawalBody.setCurrency(newBody.getCurrency().getSymbolicCode());
         return withdrawalBody;
     }
 

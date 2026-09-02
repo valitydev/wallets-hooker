@@ -1,8 +1,10 @@
 package dev.vality.wallets.hooker.handler.withdrawal;
 
 import dev.vality.fistful.withdrawal.TimestampedChange;
+import dev.vality.fistful.withdrawal.WithdrawalState;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.wallets.hooker.domain.enums.EventType;
+import dev.vality.wallets.hooker.service.WithdrawalClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class WithdrawalFailedHandler implements WithdrawalEventHandler {
 
     private final WithdrawalChangeStatusHandler withdrawalChangeStatusHandler;
+
 
     @Override
     public boolean accept(TimestampedChange change) {
@@ -30,8 +33,10 @@ public class WithdrawalFailedHandler implements WithdrawalEventHandler {
                 change,
                 event,
                 withdrawalId,
-                EventType.WITHDRAWAL_FAILED);
+                EventType.WITHDRAWAL_FAILED,
+                null);
 
         log.info("Finish handling WithdrawalFailedChange: withdrawalId={}", withdrawalId);
     }
+
 }
