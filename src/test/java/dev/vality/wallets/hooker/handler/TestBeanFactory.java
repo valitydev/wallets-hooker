@@ -6,6 +6,9 @@ import dev.vality.fistful.cashflow.*;
 import dev.vality.fistful.destination.Destination;
 import dev.vality.fistful.destination.TimestampedChange;
 import dev.vality.fistful.withdrawal.*;
+import dev.vality.fistful.withdrawal.adjustment.AdjustmentState;
+import dev.vality.fistful.withdrawal.adjustment.BodyChangePlan;
+import dev.vality.fistful.withdrawal.adjustment.ChangesPlan;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.fistful.withdrawal.status.Succeeded;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
@@ -171,6 +174,17 @@ public class TestBeanFactory {
         return createWithdrawalState()
                 .setStatus(Status.succeeded(new Succeeded()))
                 .setNewBody(createCash(1500, "USD"))
+                .setEffectiveFinalCashFlow(new FinalCashFlow()
+                        .setPostings(List.of(createFeePosting())));
+    }
+
+    public static WithdrawalState createWithdrawalStateWithAdjustmentState() {
+        return createWithdrawalState()
+                .setStatus(Status.succeeded(new Succeeded()))
+                .setAdjustments(List.of(new AdjustmentState()
+                        .setChangesPlan(new ChangesPlan()
+                                .setNewBody(new BodyChangePlan()
+                                        .setNewBody(createCash(1500, "USD"))))))
                 .setEffectiveFinalCashFlow(new FinalCashFlow()
                         .setPostings(List.of(createFeePosting())));
     }

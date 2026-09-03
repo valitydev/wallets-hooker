@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.base.Cash;
 import dev.vality.fistful.withdrawal.TimestampedChange;
 import dev.vality.fistful.withdrawal.WithdrawalState;
+import dev.vality.fistful.withdrawal.adjustment.BodyChangePlan;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.swag.wallets.webhook.events.model.*;
 import dev.vality.wallets.hooker.domain.WebHookModel;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -56,7 +58,8 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                     messageGenParams.getEventId(),
                     messageGenParams.getCreatedAt(),
                     messageGenParams.getExternalId(),
-                    messageGenParams.getWithdrawalState());
+                    messageGenParams.getWithdrawalState(),
+                    event.getChange().isSetAdjustment() ? event.getChange().getAdjustment().getId() : null);
 
             WebhookMessage webhookMessage = generatorService.generate(event, model, messageGenParams);
             webhookMessage.setParentEventId(initParenId(model, messageGenParams.getParentId()));
@@ -91,7 +94,8 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
             Long eventId,
             String createdAt,
             String externalId,
-            WithdrawalState withdrawalState) throws JsonProcessingException {
+            WithdrawalState withdrawalState,
+            String adjustmentId) throws JsonProcessingException {
         if (status.isSetFailed()) {
             WithdrawalFailed withdrawalFailed = new WithdrawalFailed()
                     .withdrawalID(withdrawalId)
@@ -107,7 +111,7 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                     .withdrawalID(withdrawalId)
                     .externalID(externalId)
                     .fee(fee)
-                    .body(initNewBody(withdrawalState));
+                    .body(initNewBody(withdrawalState, adjustmentId));
             withdrawalSucceeded.setEventType(Event.EventTypeEnum.WITHDRAWAL_SUCCEEDED);
             withdrawalSucceeded.setEventID(eventId.toString());
             withdrawalSucceeded.setOccuredAt(OffsetDateTime.parse(createdAt));
@@ -135,16 +139,27 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         return null;
     }
 
-    private WithdrawalBody initNewBody(WithdrawalState withdrawalState) {
+    private WithdrawalBody initNewBody(WithdrawalState withdrawalState, String adjustmentId) {
         if (!amountChanged(withdrawalState)) {
             return null;
         }
-        return initBody(withdrawalState.getNewBody(), withdrawalState.getBody());
+        if (withdrawalState.isSetNewBody()) {
+            return initBody(withdrawalState.getNewBody(), withdrawalState.getBody());
+        }
+
+        return withdrawalState.getAdjustments().stream()
+                .filter(adjustmentState -> Objects.equals(adjustmentState.getId(), adjustmentId))
+                .map(adjustment -> adjustment.getChangesPlan().getNewBody())
+                .filter(Objects::nonNull)
+                .map(BodyChangePlan::getNewBody)
+                .findFirst()
+                .map(newBody -> initBody(newBody, withdrawalState.getBody()))
+                .orElse(null);
     }
 
     private boolean amountChanged(WithdrawalState withdrawalState) {
         return withdrawalState != null
-                && withdrawalState.isSetNewBody();
+                && (withdrawalState.isSetNewBody() || withdrawalState.isSetAdjustments());
     }
 
     private WithdrawalBody initBody(Cash newBody, Cash oldBody) {
