@@ -3,6 +3,8 @@ package dev.vality.wallets.hooker.handler.withdrawal.generator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.fistful.base.Cash;
+import dev.vality.fistful.base.Failure;
+import dev.vality.fistful.base.SubFailure;
 import dev.vality.fistful.withdrawal.TimestampedChange;
 import dev.vality.fistful.withdrawal.WithdrawalState;
 import dev.vality.fistful.withdrawal.adjustment.BodyChangePlan;
@@ -99,7 +101,8 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
         if (status.isSetFailed()) {
             WithdrawalFailed withdrawalFailed = new WithdrawalFailed()
                     .withdrawalID(withdrawalId)
-                    .externalID(externalId);
+                    .externalID(externalId)
+                    .error(toWithdrawalError(status.getFailed().getFailure()));
             withdrawalFailed.setEventType(Event.EventTypeEnum.WITHDRAWAL_FAILED);
             withdrawalFailed.setEventID(eventId.toString());
             withdrawalFailed.setOccuredAt(OffsetDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME));
@@ -124,6 +127,21 @@ public class WithdrawalStatusChangedHookMessageGenerator extends BaseHookMessage
                     status, withdrawalId);
             throw new GenerateMessageException(message);
         }
+    }
+
+    private WithdrawalError toWithdrawalError(Failure failure) {
+        if (failure == null || !failure.isSetCode()) {
+            return null;
+        }
+        return new WithdrawalError(failure.getCode(), Objects.toString(failure.getReason(), failure.getCode()))
+                .subError(toSubError(failure.getSub()));
+    }
+
+    private SubError toSubError(SubFailure failure) {
+        if (failure == null || !failure.isSetCode()) {
+            return null;
+        }
+        return new SubError(failure.getCode()).subError(toSubError(failure.getSub()));
     }
 
     private Fee calculateFee(String withdrawalId, Long eventId, WithdrawalState withdrawalState) {
